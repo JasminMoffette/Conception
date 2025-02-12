@@ -11,7 +11,7 @@ class Produit:
         self.quantite = quantite
     
     def __str__(self):
-        return f"Produit : {self.description} - Numéro : {self.code} - Type : {self.type} - Positionnement : {self.po} - Emplacement : {self.emplacement} - Dimension : {self.dimension} - Quantité : {self.quantite}"
+        return f"Produit : {self.description} - Numéro : {self.code} - Type : {self.type} - production order : {self.po} - Emplacement : {self.emplacement} - Dimension : {self.dimension} - Quantité : {self.quantite}"
     
     def ajouter_quantite(self, quantite):
         self.quantite += quantite
@@ -28,5 +28,5 @@ class Produit:
     def definir_po(self, po):
         self.po = po
     
-    
+
 

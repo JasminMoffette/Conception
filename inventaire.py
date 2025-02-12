@@ -8,7 +8,7 @@ class Inventaire():
         self.produits = []
         self.numero = numero
 
-    def ajouter_produit(self, ajout =produit.Produit()):
+    def ajouter_produit(self, ajout=produit.Produit):
             for produit in self.produits:
                 if produit.code == ajout.code:
                     produit.quantite += ajout.quantite
