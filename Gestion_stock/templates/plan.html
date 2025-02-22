@@ -59,41 +59,54 @@
         async function loadEmplacements() {
             const response = await fetch("/api/emplacements");
             const data = await response.json();
-
+    
             const canvas = document.getElementById("planCanvas");
             const ctx = canvas.getContext("2d");
-
+    
             ctx.fillStyle = "blue";
             ctx.font = "16px Arial";
-
-            // Afficher les noms des entrepôts avec un décalage
+    
+            // Afficher les noms des entrepôts avec clic interactif
             data.emplacements.forEach(emp => {
                 const x = emp["Position X"];
                 const y = 800 - emp["Position Y"];
                 const DECALAGE_X = -50;
                 const DECALAGE_Y = 5;
+    
                 ctx.fillText(emp["Value"], x + DECALAGE_X, y + DECALAGE_Y);
+    
+                // Rendre le texte interactif
+                canvas.addEventListener("click", function(event) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = event.clientX - rect.left;
+                    const clickY = event.clientY - rect.top;
+    
+                    // Vérifier si le clic est proche du texte
+                    if (Math.abs(clickX - (x + DECALAGE_X)) < 30 && Math.abs(clickY - (y + DECALAGE_Y)) < 15) {
+                        window.location.href = "/entrepot/" + encodeURIComponent(emp["Value"]);
+                    }
+                });
             });
-
+    
             // Dessiner les murs
             ctx.strokeStyle = "black";
             ctx.lineWidth = 3;
-
             data.murs.forEach(mur => {
                 const x1 = mur["Start X"];
                 const y1 = 800 - mur["Start Y"];
                 const x2 = mur["End X"];
                 const y2 = 800 - mur["End Y"];
-
+    
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
                 ctx.stroke();
             });
         }
-
+    
         loadEmplacements();
     </script>
+    
 
 </body>
 </html>

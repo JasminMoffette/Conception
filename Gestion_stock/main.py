@@ -48,7 +48,7 @@ def get_emplacements():
 # Route pour afficher l'intérieur d'un entrepôt spécifique
 @app.route("/entrepot/<nom>")
 def afficher_entrepot(nom):
-    feuille = nom.lower().replace(" ", "_")  # Adapter le nom pour correspondre aux feuilles Excel
+    feuille = nom.lower().replace(" ", "_")  # Adapter pour correspondre au nom de la feuille Excel
 
     if not os.path.exists(EXCEL_PATH):
         print(f"❌ ERREUR : Impossible d'ouvrir '{EXCEL_PATH}', fichier manquant.")
@@ -56,11 +56,27 @@ def afficher_entrepot(nom):
 
     try:
         df_interieur = pd.read_excel(EXCEL_PATH, sheet_name=feuille)
-        entrepot_data = df_interieur.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
-        return render_template("entrepot.html", entrepot=nom, elements=entrepot_data)
+
+        # Vérifier que les colonnes existent
+        if "Value" in df_interieur and "Position X" in df_interieur and "Position Y" in df_interieur:
+            entrepot_data = df_interieur.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
+        else:
+            entrepot_data = []
+            print(f"⚠️ Avertissement : Pas d'objets définis pour {nom}")
+
+        if "Start X" in df_interieur and "Start Y" in df_interieur and "End X" in df_interieur and "End Y" in df_interieur:
+            murs_data = df_interieur.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "Start Y", "End X", "End Y"]].to_dict(orient="records")
+        else:
+            murs_data = []
+            print(f"⚠️ Avertissement : Pas de murs définis pour {nom}")
+
+        return render_template("entrepot.html", entrepot=nom, elements=entrepot_data, murs=murs_data)
+
     except Exception as e:
         print(f"❌ ERREUR : Impossible de charger la feuille '{feuille}' du fichier Excel ({e})")
         return render_template("erreur.html", message="Aucun plan disponible pour cet entrepôt.")
+
+
     
 df_murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])
 
