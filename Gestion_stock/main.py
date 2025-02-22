@@ -31,6 +31,8 @@ if __name__ == "__main__":
 
 
 
+
+
 ######   TEST  ##############
 
 print("✅ Test des fonctionnalités de l'inventaire...")
