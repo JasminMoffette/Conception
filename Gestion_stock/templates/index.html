@@ -13,10 +13,20 @@
         }
         
         header {
+
             background-color: #333;
             color: white;
             padding: 15px;
             font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+        }
+
+        header img {
+            margin-right: 15px;
+            height: 120px; 
         }
 
         nav {
@@ -82,8 +92,10 @@
 <body>
 
     <header>
-        Gestion des Stocks - Polybois
+        <img src="{{ url_for('static', filename='images/poly.png') }}" alt="Logo Polybois" width="150">
+        <h1>Gestion des Stocks - Polybois</h1>
     </header>
+    
 
     <nav>
         <ul>

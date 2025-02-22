@@ -1,13 +1,7 @@
 import os
 import pandas as pd
 from flask import Flask, render_template, jsonify
-import achat
-import ajustement
-import inventaire
-import production
-import produit
-import reception
-import repertoire
+from routes import setup_routes  # Import des routes depuis un module séparé
 
 # Initialiser l'application Flask
 app = Flask(__name__)
@@ -16,81 +10,29 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_PATH = os.path.join(BASE_DIR, "DATA_Plan_entrepot.xlsx")
 
-# Vérifier si le fichier Excel existe avant de le charger
-if not os.path.exists(EXCEL_PATH):
-    print(f"❌ ERREUR : Le fichier '{EXCEL_PATH}' est introuvable. Assurez-vous qu'il est placé dans {BASE_DIR}.")
-    df_plan = None
-else:
-    df_plan = pd.read_excel(EXCEL_PATH, sheet_name="plan")
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.route("/plan")
-def plan():
-    return render_template("plan.html")
-
-@app.route("/api/emplacements", methods=["GET"])
-def get_emplacements():
-    if df_plan is None:
-        return jsonify({"error": "Fichier Excel introuvable"}), 500
-
-    # Extraire les emplacements
-    emplacements = df_plan.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
-
-    # Extraire les murs
-    murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "Start Y", "End X", "End Y"]].to_dict(orient="records")
-
-    return jsonify({"emplacements": emplacements, "murs": murs})
-
-
-# Route pour afficher l'intérieur d'un entrepôt spécifique
-@app.route("/entrepot/<nom>")
-def afficher_entrepot(nom):
-    feuille = nom.lower().replace(" ", "_")  # Adapter pour correspondre au nom de la feuille Excel
-
+# Charger les données depuis le fichier Excel
+def charger_donnees_excel():
+    """ Vérifie et charge le fichier Excel si disponible. """
     if not os.path.exists(EXCEL_PATH):
-        print(f"❌ ERREUR : Impossible d'ouvrir '{EXCEL_PATH}', fichier manquant.")
-        return render_template("erreur.html", message="Aucun plan disponible pour cet entrepôt.")
+        print(f"❌ ERREUR : Fichier '{EXCEL_PATH}' introuvable.")
+        return None
+    return pd.read_excel(EXCEL_PATH, sheet_name=None)  # Charge toutes les feuilles
 
-    try:
-        df_interieur = pd.read_excel(EXCEL_PATH, sheet_name=feuille)
+df_excel = charger_donnees_excel()
 
-        # Vérifier que les colonnes existent
-        if "Value" in df_interieur and "Position X" in df_interieur and "Position Y" in df_interieur:
-            entrepot_data = df_interieur.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
-        else:
-            entrepot_data = []
-            print(f"⚠️ Avertissement : Pas d'objets définis pour {nom}")
+# Configuration des routes Flask
+setup_routes(app, df_excel)
 
-        if "Start X" in df_interieur and "Start Y" in df_interieur and "End X" in df_interieur and "End Y" in df_interieur:
-            murs_data = df_interieur.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "Start Y", "End X", "End Y"]].to_dict(orient="records")
-        else:
-            murs_data = []
-            print(f"⚠️ Avertissement : Pas de murs définis pour {nom}")
-
-        return render_template("entrepot.html", entrepot=nom, elements=entrepot_data, murs=murs_data)
-
-    except Exception as e:
-        print(f"❌ ERREUR : Impossible de charger la feuille '{feuille}' du fichier Excel ({e})")
-        return render_template("erreur.html", message="Aucun plan disponible pour cet entrepôt.")
-
-
-    
-df_murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])
-
-print("✅ Données des murs extraites de l'Excel :")
-
-
-
-
-# Lancer l'application Flask (DOIT ÊTRE À LA FIN)
 if __name__ == "__main__":
-    print("🚀 Lancement de l'application Flask...")
+    print("Lancement de l'application Flask...")
     app.run(debug=True)
 
-# Tester les fonctionnalités de l'inventaire
+
+
+
+
+######   TEST  ##############
+
 print("✅ Test des fonctionnalités de l'inventaire...")
 achat_test = achat.Achat(projet="001")
 produits_test = [
