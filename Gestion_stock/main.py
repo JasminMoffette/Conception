@@ -1,3 +1,6 @@
+import os
+import pandas as pd
+from flask import Flask, render_template, jsonify
 import achat
 import ajustement
 import inventaire
@@ -5,39 +8,74 @@ import production
 import produit
 import reception
 import repertoire
-import os
-import pandas as pd
-from flask import Flask, render_template, jsonify
 
 # Initialiser l'application Flask
 app = Flask(__name__)
 
-# Charger le plan global
-df_plan = pd.read_excel("DATA_Plan_entrepot.xlsx", sheet_name="plan")
+# Récupérer le chemin absolu du dossier contenant ce fichier
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+EXCEL_PATH = os.path.join(BASE_DIR, "DATA_Plan_entrepot.xlsx")
+
+# Vérifier si le fichier Excel existe avant de le charger
+if not os.path.exists(EXCEL_PATH):
+    print(f"❌ ERREUR : Le fichier '{EXCEL_PATH}' est introuvable. Assurez-vous qu'il est placé dans {BASE_DIR}.")
+    df_plan = None
+else:
+    df_plan = pd.read_excel(EXCEL_PATH, sheet_name="plan")
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-# API pour récupérer les emplacements
+@app.route("/plan")
+def plan():
+    return render_template("plan.html")
+
 @app.route("/api/emplacements", methods=["GET"])
 def get_emplacements():
+    if df_plan is None:
+        return jsonify({"error": "Fichier Excel introuvable"}), 500
+
+    # Extraire les emplacements
     emplacements = df_plan.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
-    return jsonify(emplacements)
+
+    # Extraire les murs
+    murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "Start Y", "End X", "End Y"]].to_dict(orient="records")
+
+    return jsonify({"emplacements": emplacements, "murs": murs})
+
 
 # Route pour afficher l'intérieur d'un entrepôt spécifique
 @app.route("/entrepot/<nom>")
 def afficher_entrepot(nom):
+    feuille = nom.lower().replace(" ", "_")  # Adapter le nom pour correspondre aux feuilles Excel
+
+    if not os.path.exists(EXCEL_PATH):
+        print(f"❌ ERREUR : Impossible d'ouvrir '{EXCEL_PATH}', fichier manquant.")
+        return render_template("erreur.html", message="Aucun plan disponible pour cet entrepôt.")
+
     try:
-        feuille = nom.lower().replace(" ", "_")  # Adapter le nom pour correspondre aux feuilles Excel
-        df_interieur = pd.read_excel("DATA_Plan_entrepot.xlsx", sheet_name=feuille)
+        df_interieur = pd.read_excel(EXCEL_PATH, sheet_name=feuille)
         entrepot_data = df_interieur.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
         return render_template("entrepot.html", entrepot=nom, elements=entrepot_data)
     except Exception as e:
-        print(f"Erreur: {e}")  # Log l'erreur pour debug
+        print(f"❌ ERREUR : Impossible de charger la feuille '{feuille}' du fichier Excel ({e})")
         return render_template("erreur.html", message="Aucun plan disponible pour cet entrepôt.")
+    
+df_murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])
 
-# Tester les fonctionnalités de l'inventaire (DOIT ÊTRE AVANT `app.run()`)
+print("✅ Données des murs extraites de l'Excel :")
+
+
+
+
+# Lancer l'application Flask (DOIT ÊTRE À LA FIN)
+if __name__ == "__main__":
+    print("🚀 Lancement de l'application Flask...")
+    app.run(debug=True)
+
+# Tester les fonctionnalités de l'inventaire
+print("✅ Test des fonctionnalités de l'inventaire...")
 achat_test = achat.Achat(projet="001")
 produits_test = [
     produit.Produit("Ordinateur portable", "OP001", "Électronique", po="PO12345", quantite=5),
@@ -60,6 +98,3 @@ print(produits_test)
 print(repertoire_test.inventaires)
 print(inventaire_test)
 
-# Lancer l'application Flask (DOIT ÊTRE À LA FIN)
-if __name__ == "__main__":
-    app.run(debug=True)

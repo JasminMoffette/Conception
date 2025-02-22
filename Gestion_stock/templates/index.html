@@ -76,12 +76,13 @@
             font-size: 18px;
             color: #777;
         }
+
     </style>
 </head>
 <body>
 
     <header>
-         Gestion des Stocks - Polybois
+        Gestion des Stocks - Polybois
     </header>
 
     <nav>
@@ -92,6 +93,7 @@
             <li><a href="/reception">Réception</a></li>
             <li><a href="/production">Production</a></li>
             <li><a href="/ajustement">Ajustement</a></li>
+            <li><a href="/plan">📍 Plan de l'Entreprise</a></li> 
         </ul>
     </nav>
 
@@ -102,76 +104,15 @@
         <div class="dashboard">
             <div class="card">
                 <h3>📦 Stock total</h3>
-                <p>120 articles</p>
             </div>
             <div class="card">
                 <h3>🚚 Commandes en attente</h3>
-                <p>8 en cours</p>
             </div>
             <div class="card">
                 <h3>⚠️ Ruptures</h3>
-                <p>2 articles manquants</p>
             </div>
         </div>
     </main>
 
 </body>
 </html>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Plan de l'Entreprise - Polybois</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        canvas {
-            border: 2px solid black;
-            background-color: white;
-        }
-    </style>
-</head>
-<body>
-    <h1>Plan de l'Entreprise - Polybois</h1>
-    <canvas id="planCanvas" width="1600" height="800"></canvas>
-
-    <script>
-        async function loadEmplacements() {
-            const response = await fetch("/api/emplacements");
-            const emplacements = await response.json();
-    
-            const canvas = document.getElementById("planCanvas");
-            const ctx = canvas.getContext("2d");
-    
-            ctx.fillStyle = "blue";
-            ctx.font = "16px Arial";
-    
-            emplacements.forEach(emp => {
-                const x = emp["Position X"];
-                const y = 800 - emp["Position Y"];
-    
-                ctx.fillText(emp["Value"], x, y);
-    
-                // Ajouter un événement de clic
-                canvas.addEventListener("click", function(event) {
-                    const rect = canvas.getBoundingClientRect();
-                    const clickX = event.clientX - rect.left;
-                    const clickY = event.clientY - rect.top;
-    
-                    // Vérifier si le clic est proche d'un entrepôt
-                    if (Math.abs(clickX - x) < 30 && Math.abs(clickY - y) < 30) {
-                        window.location.href = "/entrepot/" + encodeURIComponent(emp["Value"]);
-                    }
-                });
-            });
-        }
-    
-        loadEmplacements();
-    </script>
-</body>
-</html>
-
-
