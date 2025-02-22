@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>inventaire_projet - Polybois</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: white;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100px; /* Ajuste la hauteur */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .return-link {
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            background-color: #333;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+
+        .return-link:hover {
+            background-color: #555;
+        }
+
+        .module-title {
+            font-size: 24px;
+            color: #333;
+            flex-grow: 1; 
+            text-align: center;
+        }
+
+        .logo-polybois {
+            height: 120px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a class="return-link" href="/">⬅️ Retour</a>
+        <h1 class="module-title">Inventaire Par Projet</h1>
+        <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
+    </header>
+
+</body>
+</html>

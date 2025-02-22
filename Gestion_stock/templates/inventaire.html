@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,6 +9,7 @@
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         header {
@@ -18,7 +18,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 100px; /* Ajuste la hauteur */
+            height: 100px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -46,6 +46,45 @@
             height: 120px; 
         }
 
+        /* Conteneur des icônes */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        /* Style des icônes cliquables */
+        .icon-card {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+            width: 200px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .icon-card:hover {
+            transform: scale(1.1);
+            background-color: #f0f0f0;
+        }
+
+        .icon-card img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .icon-card p {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -56,6 +95,30 @@
         <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
     </header>
 
+    <!-- Conteneur des icônes -->
+    <div class="container">
+        <a href="{{ url_for('inventaire_general') }}" class="icon-card">
+            <img src="{{ url_for('static', filename='images/general.png') }}" alt="Inventaire Général">
+            <p>Inventaire Général</p>
+        </a>
+
+        <a href="{{ url_for('inventaire_libre') }}" class="icon-card">
+            <img src="{{ url_for('static', filename='images/libre.png') }}" alt="Inventaire Libre">
+            <p>Inventaire Libre</p>
+        </a>
+
+        <a href="{{ url_for('inventaire_projet') }}" class="icon-card">
+            <img src="{{ url_for('static', filename='images/projet.png') }}" alt="Inventaire par Projet">
+            <p>Inventaire par Projet</p>
+        </a>
+
+        <a href="{{ url_for('quincaillerie') }}" class="icon-card">
+            <img src="{{ url_for('static', filename='images/quincaillerie.png') }}" alt="Quincaillerie">
+            <p>Quincaillerie</p>
+        </a>
+    </div>
+
 </body>
 </html>
+
 
