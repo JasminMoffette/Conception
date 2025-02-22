@@ -3,24 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestion des Stocks - Polybois</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        
+        header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            font-size: 24px;
+        }
+
+        nav {
+            background-color: #555;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .dashboard {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            text-align: center;
+        }
+
+        .card h3 {
+            margin: 10px 0;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .card p {
+            font-size: 18px;
+            color: #777;
+        }
+    </style>
 </head>
 <body>
+
     <header>
-        <h1>Bienvenue sur le système de gestion des stocks de Polybois</h1>
+         Gestion des Stocks - Polybois
     </header>
+
     <nav>
         <ul>
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/inventaire">Inventaire</a></li>
             <li><a href="/achat">Achat</a></li>
             <li><a href="/reception">Réception</a></li>
-            <li><a href="/inventaire">Inventaire</a></li>
             <li><a href="/production">Production</a></li>
             <li><a href="/ajustement">Ajustement</a></li>
         </ul>
     </nav>
+
     <main>
-        <h2>Tableau de bord</h2>
-        <p>Ici, vous pourrez afficher des indicateurs clés et consulter les stocks.</p>
+        <h2>📊 Tableau de bord</h2>
+        <p>Bienvenue sur le système de gestion des stocks de Polybois. Consultez les informations en temps réel.</p>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>📦 Stock total</h3>
+                <p>120 articles</p>
+            </div>
+            <div class="card">
+                <h3>🚚 Commandes en attente</h3>
+                <p>8 en cours</p>
+            </div>
+            <div class="card">
+                <h3>⚠️ Ruptures</h3>
+                <p>2 articles manquants</p>
+            </div>
+        </div>
     </main>
+
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Plan de l'Entreprise - Polybois</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid black;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Plan de l'Entreprise - Polybois</h1>
+    <canvas id="planCanvas" width="1600" height="800"></canvas>
+
+    <script>
+        async function loadEmplacements() {
+            const response = await fetch("/api/emplacements");
+            const emplacements = await response.json();
+    
+            const canvas = document.getElementById("planCanvas");
+            const ctx = canvas.getContext("2d");
+    
+            ctx.fillStyle = "blue";
+            ctx.font = "16px Arial";
+    
+            emplacements.forEach(emp => {
+                const x = emp["Position X"];
+                const y = 800 - emp["Position Y"];
+    
+                ctx.fillText(emp["Value"], x, y);
+    
+                // Ajouter un événement de clic
+                canvas.addEventListener("click", function(event) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = event.clientX - rect.left;
+                    const clickY = event.clientY - rect.top;
+    
+                    // Vérifier si le clic est proche d'un entrepôt
+                    if (Math.abs(clickX - x) < 30 && Math.abs(clickY - y) < 30) {
+                        window.location.href = "/entrepot/" + encodeURIComponent(emp["Value"]);
+                    }
+                });
+            });
+        }
+    
+        loadEmplacements();
+    </script>
+</body>
+</html>
+
 
