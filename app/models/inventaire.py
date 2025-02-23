@@ -1,5 +1,5 @@
 import repertoire
-import produit
+import app.models.produit as produit
 
 class Inventaire():
 

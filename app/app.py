@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify
-import inventaire  # Importez ici vos modules existants
-import produit
+import app.models.inventaire as inventaire  # Importez ici vos modules existants
+import app.models.produit as produit
 
 
 app = Flask(__name__)
