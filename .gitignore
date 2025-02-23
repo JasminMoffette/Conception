@@ -23,3 +23,7 @@ logs/
 .env
 config.json
 config.yaml
+
+# Fichier système spécifique à macOS
+.DS_Store
+
