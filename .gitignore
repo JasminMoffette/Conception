@@ -1,0 +1,25 @@
+# 🔹 Exclure les fichiers Python générés automatiquement
+__pycache__/
+*.pyc
+*.pyo
+
+# 🔹 Exclure l'environnement virtuel Python
+venv/
+env/
+
+# 🔹 Exclure les fichiers système inutiles (Mac et Windows)
+.DS_Store
+Thumbs.db
+
+# 🔹 Exclure la base de données locale (si générée dynamiquement)
+*.db
+*.sqlite3
+
+# 🔹 Exclure les fichiers de logs et temporaires
+logs/
+*.log
+
+# 🔹 Exclure les fichiers de configuration sensibles
+.env
+config.json
+config.yaml
