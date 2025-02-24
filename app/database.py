@@ -15,6 +15,7 @@ class Database:
                 description TEXT,
                 materiaux TEXT,
                 categorie TEXT,
+                statut TEXT,            
                 po TEXT,
                 emplacement TEXT,
                 dimension TEXT,

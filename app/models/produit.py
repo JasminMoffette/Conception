@@ -1,28 +1,15 @@
+from app.database import Database
+import json  # Pour gérer l'historique sous forme de liste
+
 class Produit:
-    def __init__(self, code, description=None, materiaux=None, categorie=None, po=None, emplacement=None, dimension=None, projet=None, quantite=0, cp=None, fournisseur=None, coupe=None, no_catalogue=None, fsc=None, historique=None):
-        """
-        Initialise un produit de l'inventaire.
-        :param code: Numéro d'identification du produit en lien avec les dessins
-        :param description: Description du produit
-        :param materiaux: Type de matériel
-        :param categorie: Catégorie du produit
-        :param po: Numéro de commande d'achat associé à ce produit
-        :param emplacement: Emplacement du produit (usine, entrepôt, cellule)
-        :param dimension: Dimensions du produit (épaisseur, largeur, longueur)
-        :param projet: Projet lié à ce produit
-        :param quantite: Quantité de ce produit calculée avec le code (par défaut 0)
-        :param cp: Commande de production liée à ce produit
-        :param fournisseur: Fournisseur du produit
-        :param coupe: Type de coupe du produit
-        :param no_catalogue: Numéro du catalogue du produit Maestro
-        :param fsc: FSC du produit
-        :param historique: Historique des déplacements du produit (dates entre chaque module)
-        """
+    def __init__(self, code, description=None, materiaux=None, categorie=None, po=None, statut=None, emplacement=None, dimension=None, projet=None, quantite=0, cp=None, fournisseur=None, coupe=None, no_catalogue=None, fsc=None, historique=None):
+        """ Initialise un produit de l'inventaire. """
         self.code = code
         self.description = description
         self.materiaux = materiaux
         self.categorie = categorie
         self.po = po
+        self.statut = statut
         self.emplacement = emplacement
         self.dimension = dimension
         self.projet = projet
@@ -33,39 +20,53 @@ class Produit:
         self.no_catalogue = no_catalogue
         self.fsc = fsc
         self.historique = historique if historique is not None else []
-    
-    def mettre_a_jour_quantite(self, quantite):
-        """Met à jour la quantité en stock du produit."""
-        self.quantite = quantite
-        self.historique.append(f"Mise à jour quantité: {quantite}")
-    
-    def ajuster_quantite(self, quantite):
-        """Ajuste la quantité du produit en ajoutant ou en retirant des unités."""
-        self.quantite += quantite
-        mouvement = f"Ajout de {quantite}" if quantite > 0 else f"Retrait de {-quantite}"
-        self.historique.append(mouvement)
-    
-    def obtenir_valeur_stock(self, prix_unitaire):
-        """Calcule la valeur totale du stock pour ce produit."""
-        return self.quantite * prix_unitaire
-    
-    def afficher_historique(self):
-        """Affiche l'historique des mouvements de stock."""
-        return '\n'.join(self.historique) if self.historique else "Aucun mouvement enregistré"
-    
-    def __str__(self):
-        return f"Produit({self.code}): {self.description if self.description else 'Non défini'}, Matériau: {self.materiaux if self.materiaux else 'Non défini'}, Catégorie: {self.categorie if self.categorie else 'Non défini'}, Stock: {self.quantite}, Fournisseur: {self.fournisseur if self.fournisseur else 'Non défini'}, Projet: {self.projet if self.projet else 'Non assigné'}, Emplacement: {self.emplacement if self.emplacement else 'Non défini'}"
+        self.db = Database()  # Connexion à la base de données
 
+    def ajouter_produit(self):
 
-# Exemple d'utilisation
-if __name__ == "__main__":
-    produit1 = Produit("BOIS123", "Panneau MDF", "Bois", "Panneaux", "PO987", "Entrepôt A1", (20, 100, 200), "PROJ001", 50, "CP123", "Fournisseur A", "Sciage", "CAT456", "FSC123")
-    print(produit1)
-    produit1.ajuster_quantite(-10)
-    print(f"Nouvelle quantité : {produit1.quantite}")
-    print("Historique des mouvements:")
-    print(produit1.afficher_historique())
+        historique_str = json.dumps(self.historique) if isinstance(self.historique, list) else self.historique
+        """Ajoute un produit à la base de données s'il n'existe pas déjà."""
+        self.db.cursor.execute("SELECT * FROM produits WHERE code = ?", (self.code,))
+        existing_product = self.db.cursor.fetchone()
 
+        if existing_product:
+            print(f"⚠️ Le produit {self.code} existe déjà.")
+        else:
+            self.db.cursor.execute("""
+                INSERT INTO produits (code, description, materiaux, categorie, po, statut, emplacement, dimension, projet, quantite, cp, fournisseur, coupe, no_catalogue, fsc, historique)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (self.code, self.description, self.materiaux, self.categorie, self.po, self.statut, self.emplacement,
+                  self.dimension, self.projet, self.quantite, self.cp, self.fournisseur, self.coupe,
+                  self.no_catalogue, self.fsc, json.dumps(self.historique)))
+            self.db.conn.commit()
+            print(f"✅ Produit {self.code} ajouté avec succès !")
+
+    def modifier_produit(self, **kwargs):
+        """Modifie les attributs d'un produit existant sans écraser les autres champs."""
+        updates = ", ".join([f"{key} = ?" for key in kwargs])
+        values = list(kwargs.values()) + [self.code]
+
+        self.db.cursor.execute(f"UPDATE produits SET {updates} WHERE code = ?", values)
+        self.db.conn.commit()
+        print(f"✅ Produit {self.code} mis à jour avec succès.")
+
+    def recuperer_produit(self):
+        """Récupère un produit depuis la base de données."""
+        self.db.cursor.execute("SELECT * FROM produits WHERE code = ?", (self.code,))
+        produit = self.db.cursor.fetchone()
+
+        if produit:
+            print(f"ℹ️ Détails du produit {self.code}: {produit}")
+            return produit
+        else:
+            print(f"❌ Produit {self.code} non trouvé.")
+            return None
+
+    def supprimer_produit(self):
+        """Supprime un produit de la base de données."""
+        self.db.cursor.execute("DELETE FROM produits WHERE code = ?", (self.code,))
+        self.db.conn.commit()
+        print(f"🗑️ Produit {self.code} supprimé avec succès.")
 
 
 

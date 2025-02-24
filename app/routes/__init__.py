@@ -8,6 +8,7 @@ from .emplacement_routes import emplacement_bp
 from .entrepot_routes import entrepot_bp
 
 
+
 def register_blueprints(app):
     """Enregistre tous les blueprints dans l'application Flask."""
     app.register_blueprint(main_bp)
@@ -18,6 +19,8 @@ def register_blueprints(app):
     app.register_blueprint(ajustement_bp, url_prefix="/ajustement")
     app.register_blueprint(emplacement_bp, url_prefix="/emplacement")
     app.register_blueprint(entrepot_bp)  
+  
+
 
 
 

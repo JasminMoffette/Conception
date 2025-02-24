@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,6 +9,7 @@
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         header {
@@ -18,7 +18,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 100px; /* Ajuste la hauteur */
+            height: 100px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -43,9 +43,40 @@
         }
 
         .logo-polybois {
-            height: 120px; 
+            height: 120px;
         }
 
+        .hidden { display: none; } /* Cache les sections non sélectionnées */
+
+        .container {
+            margin: 20px auto;
+            width: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input, select {
+            padding: 10px;
+            margin: 10px;
+            width: 80%;
+        }
     </style>
 </head>
 <body>
@@ -56,5 +87,79 @@
         <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
     </header>
 
+    <div class="container">
+        <h2>📋 Options d'ajustement</h2>
+        
+        <!-- Boutons pour afficher les options -->
+        <button onclick="toggleSection('formCreation')">➕ Créer un produit</button>
+        <button onclick="toggleSection('formProjet')">🏗️ Ajustement par projet</button>
+        <button onclick="toggleSection('formGeneral')">📦 Ajustement général</button>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div id="flash-messages">
+                    {% for category, message in messages %}
+                        <p class="flash-message {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Section Création de produit -->
+        <div id="formCreation" class="hidden">
+            <h3>🛠️ Création de Produit</h3>
+            <form method="POST" action="{{ url_for('ajustement.creer_produit') }}">
+                <input type="text" name="code" placeholder="Code Produit (Obligatoire)" required><br>
+
+                <label><input type="checkbox" name="attributs" value="description" onchange="toggleField('description')"> Description</label><br>
+                <label><input type="checkbox" name="attributs" value="materiaux" onchange="toggleField('materiaux')"> Matériaux</label><br>
+                <label><input type="checkbox" name="attributs" value="categorie" onchange="toggleField('categorie')"> Catégorie</label><br>
+                <label><input type="checkbox" name="attributs" value="po" onchange="toggleField('po')"> PO (Commande d'achat)</label><br>
+                <label><input type="checkbox" name="attributs" value="emplacement" onchange="toggleField('emplacement')"> Emplacement</label><br>
+                <label><input type="checkbox" name="attributs" value="dimension" onchange="toggleField('dimension')"> Dimension</label><br>
+                <label><input type="checkbox" name="attributs" value="quantite" onchange="toggleField('quantite')"> Quantité</label><br>
+                <label><input type="checkbox" name="attributs" value="fournisseur" onchange="toggleField('fournisseur')"> Fournisseur</label><br>
+
+                <input type="text" name="description" id="description" class="hidden" placeholder="Description"><br>
+                <input type="text" name="materiaux" id="materiaux" class="hidden" placeholder="Matériaux"><br>
+                <input type="text" name="categorie" id="categorie" class="hidden" placeholder="Catégorie"><br>
+                <input type="text" name="po" id="po" class="hidden" placeholder="PO"><br>
+                <input type="text" name="emplacement" id="emplacement" class="hidden" placeholder="Emplacement"><br>
+                <input type="text" name="dimension" id="dimension" class="hidden" placeholder="Dimension"><br>
+                <input type="number" name="quantite" id="quantite" class="hidden" placeholder="Quantité"><br>
+                <input type="text" name="fournisseur" id="fournisseur" class="hidden" placeholder="Fournisseur"><br>
+
+                <button type="submit">📥 Créer Produit</button>
+            </form>
+        </div>
+
+        <!-- Section Ajustement par Projet (à implémenter) -->
+        <div id="formProjet" class="hidden">
+            <h3>🏗️ Ajustement par Projet</h3>
+            <p>⚙️ Cette section sera bientôt disponible.</p>
+        </div>
+
+        <!-- Section Ajustement Général (à implémenter) -->
+        <div id="formGeneral" class="hidden">
+            <h3>📦 Ajustement Général</h3>
+            <p>⚙️ Cette section sera bientôt disponible.</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            var sections = ["formCreation", "formProjet", "formGeneral"];
+            sections.forEach(id => {
+                document.getElementById(id).classList.add("hidden");
+            });
+            document.getElementById(sectionId).classList.remove("hidden");
+        }
+
+        function toggleField(fieldId) {
+            var field = document.getElementById(fieldId);
+            field.classList.toggle("hidden");
+        }
+    </script>
+
 </body>
 </html>
+

@@ -50,10 +50,32 @@
 <body>
 
     <header>
+
         <a class="return-link" href="/">⬅️ Retour</a>
         <h1 class="module-title">🛒 Module Achat</h1>
         <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
     </header>
+
+    <main>
+        <section>
+            <h2>📂 Importer une commande d'achat</h2>
+            <form action="/upload_commande" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit">📥 Importer</button>
+            </form>
+            <!-- Affichage des messages de confirmation ou d'erreur -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        </section>
+    </main>
+
 
 </body>
 </html>
