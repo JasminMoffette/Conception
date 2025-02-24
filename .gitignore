@@ -16,8 +16,6 @@ Thumbs.db
 logs/
 *.log
 
-# Fichier système spécifique à macOS
-.DS_Store
 
 # Dossier de cache des tests Pytest
 .pytest_cache/
