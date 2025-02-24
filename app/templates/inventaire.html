@@ -102,11 +102,11 @@
             <p>Inventaire Général</p>
         </a>
 
-        <a href="{{ url_for('inventaire.inventaire_libre') }}" class="icon-card">
-            <img src="{{ url_for('static', filename='images/libre.png') }}" alt="Inventaire Libre">
+        <a href="{{ url_for('inventaire.liste_produits_libres') }}" class="icon-card">
+            <img src="{{ url_for('static', filename='images/inventaire_libre.png') }}" alt="Inventaire Libre">
             <p>Inventaire Libre</p>
         </a>
-
+        
         <a href="{{ url_for('inventaire.inventaire_projet') }}" class="icon-card">
             <img src="{{ url_for('static', filename='images/projet.png') }}" alt="Inventaire par Projet">
             <p>Inventaire par Projet</p>

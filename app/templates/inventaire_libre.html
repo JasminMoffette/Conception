@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>inventaire_libre - Polybois</title>
+    <title>Inventaire Libre - Polybois</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         header {
@@ -17,7 +18,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 100px; /* Ajuste la hauteur */
+            height: 100px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -37,7 +38,7 @@
         .module-title {
             font-size: 24px;
             color: #333;
-            flex-grow: 1; 
+            flex-grow: 1;
             text-align: center;
         }
 
@@ -45,15 +46,159 @@
             height: 120px;
         }
 
+        .container {
+            margin: 20px auto;
+            width: 80%;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 50%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button {
+            padding: 8px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #noProducts {
+            display: none;
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
     <header>
         <a class="return-link" href="/">⬅️ Retour</a>
-        <h1 class="module-title">Inventaire Librel</h1>
+        <h1 class="module-title">📋 Inventaire Libre</h1>
         <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
     </header>
+
+    <div class="container">
+        <h2>🔎 Rechercher un produit</h2>
+        <input type="text" id="search" placeholder="Rechercher par code, description ou emplacement..." onkeyup="filterProduits()">
+
+        <p id="noProducts">⚠️ Aucun produit libre disponible.</p>
+
+        <table id="produitsTable">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Description</th>
+                    <th>Matériaux</th>
+                    <th>Quantité</th>
+                    <th>Emplacement</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if produits %}
+                    {% for produit in produits %}
+                    <tr>
+                        <td>{{ produit.code }}</td>
+                        <td>{{ produit.description }}</td>
+                        <td>{{ produit.materiaux }}</td>
+                        <td>{{ produit.quantite }}</td>
+                        <td>{{ produit.emplacement }}</td>
+                        <td>
+                            <button onclick="attribuerProjet('{{ produit.code }}')">📝 Attribuer Projet</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">⚠️ Aucun produit libre trouvé.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function filterProduits() {
+            let searchValue = document.getElementById("search").value.toLowerCase();
+            let rows = document.querySelectorAll("#produitsTable tbody tr");
+            let found = false;
+
+            rows.forEach(row => {
+                let code = row.cells[0]?.textContent.toLowerCase() || "";
+                let description = row.cells[1]?.textContent.toLowerCase() || "";
+                let emplacement = row.cells[4]?.textContent.toLowerCase() || "";
+
+                if (code.includes(searchValue) || description.includes(searchValue) || emplacement.includes(searchValue)) {
+                    row.style.display = "";
+                    found = true;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            document.getElementById("noProducts").style.display = found ? "none" : "block";
+        }
+
+        function attribuerProjet(codeProduit) {
+            let projet = prompt(`Attribuer un projet au produit ${codeProduit} :`);
+            if (projet) {
+                let quantite = prompt(`Quantité à attribuer au projet '${projet}' :`);
+                quantite = parseInt(quantite, 10);
+
+                if (isNaN(quantite) || quantite <= 0) {
+                    alert("❌ Veuillez entrer une quantité valide !");
+                    return;
+                }
+
+                fetch("/inventaire/attribuer_projet", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: codeProduit, projet: projet, quantite: quantite })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload(); // Recharger la page après modification
+                })
+                .catch(error => {
+                    console.error("Erreur lors de l'attribution du projet :", error);
+                    alert("❌ Une erreur s'est produite.");
+                });
+            }
+        }
+    </script>
 
 </body>
 </html>
