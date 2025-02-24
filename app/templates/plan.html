@@ -57,7 +57,7 @@
 
     <script>
         async function loadEmplacements() {
-            const response = await fetch("/api/emplacements");
+            const response = await fetch("emplacement/api/emplacements");
             const data = await response.json();
     
             const canvas = document.getElementById("planCanvas");

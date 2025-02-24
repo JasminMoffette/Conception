@@ -24,11 +24,18 @@ def get_emplacements():
     if "plan" not in df_excel:
         print("⚠️ Alerte : La feuille 'plan' est absente dans le fichier Excel.")
         return jsonify({"error": "Feuille 'plan' introuvable dans Excel"}), 500
-
+    
     df_plan = df_excel["plan"]
     emplacements = df_plan.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
-    murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "Start Y", "End X", "End Y"]].to_dict(orient="records")
+    murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "rt Y", "End X", "End Y"]].to_dict(orient="records")
 
     return jsonify({"emplacements": emplacements, "murs": murs})
+
+def render_dynamic_module(module_name):
+    return render_template(f"{module_name}.html")
+
+modules = ["achat", "reception", "inventaire", "production", "ajustement"]
+for module in modules:
+    main_bp.add_url_rule(f"/{module}", module, render_dynamic_module, defaults={"module_name": module})
 
 
