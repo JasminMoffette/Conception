@@ -60,10 +60,7 @@ def setup_routes(app, df_excel):
     for module in modules:
         app.add_url_rule(f"/{module}", module, render_dynamic_module, defaults={"module_name": module})
 
-    # 🔍 Vérification : Afficher toutes les routes enregistrées
-    #print("\n📌 Routes enregistrées dans Flask :")
-    #for rule in app.url_map.iter_rules():
-       # print(f"{rule} → {rule.endpoint}")
+
 
         
         

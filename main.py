@@ -1,10 +1,11 @@
+from app import create_app
 import os
 import pandas as pd
 from flask import Flask, render_template, jsonify
-from routes import setup_routes  # Import des routes depuis un module séparé
+from app import create_app
 
 # Initialiser l'application Flask
-app = Flask(__name__)
+app = create_app()
 
 # Récupérer le chemin absolu du dossier contenant ce fichier
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,11 +21,8 @@ def charger_donnees_excel():
 
 df_excel = charger_donnees_excel()
 
-# Configuration des routes Flask
-setup_routes(app, df_excel)
 
 if __name__ == "__main__":
-    print("Lancement de l'application Flask...")
     app.run(debug=True)
 
 

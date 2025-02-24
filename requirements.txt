@@ -2,3 +2,5 @@ Flask
 Flask-SQLAlchemy
 pandas
 
+pip freeze > requirements.txt
+pip freeze > requirements.txt
