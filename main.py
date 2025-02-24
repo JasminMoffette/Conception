@@ -4,7 +4,9 @@ from flask import Flask
 from app import create_app
 
 # Initialiser l'application Flask
+
 app = create_app()
+
 
 # Charger les données Excel
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,5 +24,4 @@ df_excel = charger_donnees_excel()
 app.config["df_excel"] = df_excel  # ✅ Vérifie que cette ligne est bien présente
 
 if __name__ == "__main__":
-    print("🚀 Lancement de Flask...")
     app.run(debug=True)
