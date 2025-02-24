@@ -97,22 +97,22 @@
 
     <!-- Conteneur des icônes -->
     <div class="container">
-        <a href="{{ url_for('inventaire_general') }}" class="icon-card">
+        <a href="{{ url_for('inventaire.inventaire_general') }}" class="icon-card">
             <img src="{{ url_for('static', filename='images/general.png') }}" alt="Inventaire Général">
             <p>Inventaire Général</p>
         </a>
 
-        <a href="{{ url_for('inventaire_libre') }}" class="icon-card">
+        <a href="{{ url_for('inventaire.inventaire_libre') }}" class="icon-card">
             <img src="{{ url_for('static', filename='images/libre.png') }}" alt="Inventaire Libre">
             <p>Inventaire Libre</p>
         </a>
 
-        <a href="{{ url_for('inventaire_projet') }}" class="icon-card">
+        <a href="{{ url_for('inventaire.inventaire_projet') }}" class="icon-card">
             <img src="{{ url_for('static', filename='images/projet.png') }}" alt="Inventaire par Projet">
             <p>Inventaire par Projet</p>
         </a>
 
-        <a href="{{ url_for('quincaillerie') }}" class="icon-card">
+        <a href="{{ url_for('inventaire.quincaillerie') }}" class="icon-card">
             <img src="{{ url_for('static', filename='images/quincaillerie.png') }}" alt="Quincaillerie">
             <p>Quincaillerie</p>
         </a>
