@@ -2,6 +2,9 @@ import os
 import pandas as pd
 from flask import Flask
 from app import create_app
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 # Initialiser l'application Flask
 
