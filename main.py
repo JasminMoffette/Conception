@@ -6,8 +6,6 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Initialiser l'application Flask
-
 app = create_app()
 
 

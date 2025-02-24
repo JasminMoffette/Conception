@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
 # 🔹 Exclure l'environnement virtuel Python
 venv/
@@ -11,19 +12,18 @@ env/
 .DS_Store
 Thumbs.db
 
-# 🔹 Exclure la base de données locale (si générée dynamiquement)
-*.db
-*.sqlite3
-
 # 🔹 Exclure les fichiers de logs et temporaires
 logs/
 *.log
 
-# 🔹 Exclure les fichiers de configuration sensibles
-.env
-config.json
-config.yaml
-
 # Fichier système spécifique à macOS
 .DS_Store
+
+# Dossier de cache des tests Pytest
+.pytest_cache/
+
+# Dossier instance de Flask
+instance/
+
+
 
