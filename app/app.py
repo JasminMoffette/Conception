@@ -1,7 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import os
 from app.models.achat import Achat  # Importer la classe Achat
-from app.models.produit import Produit  # Importer la classe Produit
+from app.models.produit import Produit
+import sqlite3
+
+def get_db_connection():
+    conn = sqlite3.connect("inventaire.db")  # Remplace "inventaire.db" par le nom de ta base de données si différent
+    conn.row_factory = sqlite3.Row  # Permet d’accéder aux résultats sous forme de dictionnaire
+    return conn  # Importer la classe Produit
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "achats/"  # Dossier où stocker les fichiers uploadés
@@ -54,6 +60,17 @@ def creer_produit():
         flash("❌ Le code produit est obligatoire.", "error")
         return redirect(url_for("ajustement"))  # Vérifie bien que ça pointe vers `/ajustement`
 
+    # Vérifier si le produit existe déjà
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM produits WHERE code = ?", (code,))
+    existing_product = cursor.fetchone()
+
+    if existing_product:
+        flash(f"⚠️ Le produit {code} existe déjà dans la base de données.", "warning")
+        conn.close()
+        return redirect(url_for("ajustement"))
+
     # Récupérer les attributs sélectionnés
     attributs = {key: request.form.get(key) for key in request.form.keys() if key != "code" and request.form.get(key)}
 
@@ -62,7 +79,7 @@ def creer_produit():
     produit.ajouter_produit()
 
     flash(f"✅ Produit {code} ajouté avec succès !", "success")
-    return redirect(url_for("ajustement")) 
+    return redirect(url_for("ajustement"))
 
 
 
