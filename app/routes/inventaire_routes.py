@@ -4,6 +4,7 @@ from app.database import Database
 from .projet import Projet
 
 
+
 inventaire_bp = Blueprint('inventaire', __name__) 
 
 @inventaire_bp.route("/")

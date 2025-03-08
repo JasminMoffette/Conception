@@ -1,9 +1,14 @@
 import tkinter as tk
 from tkinter import Toplevel
 import pandas as pd
+import os
+from config import Config  # Importer la classe de configuration
+
+# Construire le chemin complet vers le fichier Excel
+data_file_path = os.path.join(Config.DATA_FOLDER, 'DATA_Plan_entrepot.xlsx')
 
 # Charger le plan global depuis la feuille "plan"
-df_plan = pd.read_excel("DATA_Plan_entrepot.xlsx", sheet_name="plan")
+df_plan = pd.read_excel(data_file_path, sheet_name="plan")
 
 class EmplacementApp:
     def __init__(self, root):

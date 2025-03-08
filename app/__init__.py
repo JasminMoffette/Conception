@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 
+
 # Initialisation de SQLAlchemy
 db = SQLAlchemy()
 migrate = Migrate()

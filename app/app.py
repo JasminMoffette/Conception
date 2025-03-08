@@ -3,11 +3,14 @@ import os
 from app.models.achat import Achat  # Importer la classe Achat
 from app.models.produit import Produit
 import sqlite3
+from config import Config  # Importer la configuration
 
 def get_db_connection():
-    conn = sqlite3.connect("inventaire.db")  # Remplace "inventaire.db" par le nom de ta base de données si différent
+    # Construire le chemin complet vers le fichier inventaire.db dans le dossier instance
+    db_path = os.path.join(Config.INSTANCE_FOLDER, "inventaire.db")
+    conn = sqlite3.connect(db_path)  # Utilisation du chemin centralisé
     conn.row_factory = sqlite3.Row  # Permet d’accéder aux résultats sous forme de dictionnaire
-    return conn  # Importer la classe Produit
+    return conn
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "achats/"  # Dossier où stocker les fichiers uploadés

@@ -5,6 +5,7 @@ from app import create_app
 import logging
 import webbrowser
 import threading
+from config import Config
 
 # Réduire les logs inutiles
 logging.basicConfig(level=logging.ERROR)
@@ -14,7 +15,8 @@ app = create_app()
 
 # Charger les données Excel uniquement si elles existent
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXCEL_PATH = os.path.join(BASE_DIR, "DATA_Plan_entrepot.xlsx")
+# Construction du chemin vers le fichier Excel à partir de la config
+EXCEL_PATH = os.path.join(Config.DATA_FOLDER, "DATA_Plan_entrepot.xlsx")
 
 def charger_donnees_excel():
     """Charge le fichier Excel s'il est disponible."""

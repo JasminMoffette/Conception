@@ -1,11 +1,19 @@
 import sqlite3
+import os
+from config import Config
 
 class Database:
-    def __init__(self, db_name="inventaire.db"):
-        """ Initialise la connexion à la base de données et crée les tables si elles n'existent pas. """
+    def __init__(self, db_name=None):
+        # Si aucun nom de fichier n'est fourni, on utilise celui défini dans la config
+        if db_name is None:
+            # S'assurer que le dossier instance existe
+            os.makedirs(Config.INSTANCE_FOLDER, exist_ok=True)
+            db_name = os.path.join(Config.INSTANCE_FOLDER, "inventaire.db")
+        
+        # Initialisation de la connexion à la base de données
         self.conn = sqlite3.connect(db_name, check_same_thread=False)
-        self.conn.row_factory = sqlite3.Row  # ✅ Permet d'accéder aux résultats comme un dictionnaire
-        self.cursor = self.conn.cursor()  # ✅ Ajoute self.cursor ici !
+        self.conn.row_factory = sqlite3.Row  # Accès aux résultats comme un dictionnaire
+        self.cursor = self.conn.cursor()      # Création du curseur
         self.creer_tables()
 
     def creer_tables(self):
