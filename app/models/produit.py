@@ -1,15 +1,31 @@
-from app.database import Database
-import json  # Pour gérer l'historique sous forme de liste
+from app import db
+import json
 
-class Produit:
-    def __init__(self, code, description=None, materiaux=None, categorie=None, po=None, statut=None, emplacement=None, dimension=None, projet=None, quantite=0, cp=None, fournisseur=None, coupe=None, no_catalogue=None, fsc=None, historique=None):
-        """ Initialise un produit de l'inventaire. """
+class Produit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+    materiaux = db.Column(db.String(100))
+    categorie = db.Column(db.String(100))
+    po = db.Column(db.String(50))
+    statut = db.Column(db.String(50))
+    emplacement = db.Column(db.String(100))
+    dimension = db.Column(db.String(100))
+    projet = db.Column(db.String(100))
+    quantite = db.Column(db.Integer, default=0)
+    cp = db.Column(db.String(100))
+    fournisseur = db.Column(db.String(100))
+    coupe = db.Column(db.String(50))
+    no_catalogue = db.Column(db.String(100))
+    fsc = db.Column(db.String(50))
+    historique = db.Column(db.Text)  # Stocké en JSON
+
+    def __init__(self, code, description=None, materiaux=None, categorie=None, po=None, emplacement=None, dimension=None, projet=None, quantite=0, cp=None, fournisseur=None, coupe=None, no_catalogue=None, fsc=None, historique=None):
         self.code = code
         self.description = description
         self.materiaux = materiaux
         self.categorie = categorie
         self.po = po
-        self.statut = statut
         self.emplacement = emplacement
         self.dimension = dimension
         self.projet = projet
@@ -19,54 +35,24 @@ class Produit:
         self.coupe = coupe
         self.no_catalogue = no_catalogue
         self.fsc = fsc
-        self.historique = historique if historique is not None else []
-        self.db = Database()  # Connexion à la base de données
+        self.historique = json.dumps(historique) if historique else json.dumps([])
 
     def ajouter_produit(self):
-
-        historique_str = json.dumps(self.historique) if isinstance(self.historique, list) else self.historique
-        """Ajoute un produit à la base de données s'il n'existe pas déjà."""
-        self.db.cursor.execute("SELECT * FROM produits WHERE code = ?", (self.code,))
-        existing_product = self.db.cursor.fetchone()
-
-        if existing_product:
-            print(f"⚠️ Le produit {self.code} existe déjà.")
-        else:
-            self.db.cursor.execute("""
-                INSERT INTO produits (code, description, materiaux, categorie, po, statut, emplacement, dimension, projet, quantite, cp, fournisseur, coupe, no_catalogue, fsc, historique)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (self.code, self.description, self.materiaux, self.categorie, self.po, self.statut, self.emplacement,
-                  self.dimension, self.projet, self.quantite, self.cp, self.fournisseur, self.coupe,
-                  self.no_catalogue, self.fsc, json.dumps(self.historique)))
-            self.db.conn.commit()
-            print(f"✅ Produit {self.code} ajouté avec succès !")
+        db.session.add(self)
+        db.session.commit()
+        print(f"✅ Produit {self.code} ajouté avec succès.")
 
     def modifier_produit(self, **kwargs):
-        """Modifie les attributs d'un produit existant sans écraser les autres champs."""
-        updates = ", ".join([f"{key} = ?" for key in kwargs])
-        values = list(kwargs.values()) + [self.code]
-
-        self.db.cursor.execute(f"UPDATE produits SET {updates} WHERE code = ?", values)
-        self.db.conn.commit()
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
         print(f"✅ Produit {self.code} mis à jour avec succès.")
 
-    def recuperer_produit(self):
-        """Récupère un produit depuis la base de données."""
-        self.db.cursor.execute("SELECT * FROM produits WHERE code = ?", (self.code,))
-        produit = self.db.cursor.fetchone()
-
-        if produit:
-            print(f"ℹ️ Détails du produit {self.code}: {produit}")
-            return produit
-        else:
-            print(f"❌ Produit {self.code} non trouvé.")
-            return None
+    @classmethod
+    def recuperer_produit(cls, code):
+        return cls.query.filter_by(code=code).first()
 
     def supprimer_produit(self):
-        """Supprime un produit de la base de données."""
-        self.db.cursor.execute("DELETE FROM produits WHERE code = ?", (self.code,))
-        self.db.conn.commit()
+        db.session.delete(self)
+        db.session.commit()
         print(f"🗑️ Produit {self.code} supprimé avec succès.")
-
-
-
