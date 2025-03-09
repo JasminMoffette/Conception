@@ -19,9 +19,7 @@ def inventaire_general():
 
 @inventaire_bp.route("/libre")
 def inventaire_libre():
-    produits_libres = Produit.query.filter(
-        (Produit.projet == None) | (Produit.projet == '') | (Produit.projet == "")
-    ).filter(Produit.quantite > 0).all()
+    produits_libres = Produit.query.filter(~Produit.projets_associes.any()).all()
 
     return render_template("inventaire_libre.html", produits=produits_libres)
 

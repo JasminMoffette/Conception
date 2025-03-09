@@ -1,5 +1,9 @@
 from app import db
 import json
+from .produit_projet import ProduitProjet
+
+
+
 
 class Produit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -11,8 +15,7 @@ class Produit(db.Model):
     statut = db.Column(db.String(50))
     emplacement = db.Column(db.String(100))
     dimension = db.Column(db.String(100))
-    projet = db.Column(db.String(100))
-    quantite = db.Column(db.Integer, default=0)
+    quantite = db.Column(db.Integer, default=0) 
     cp = db.Column(db.String(100))
     fournisseur = db.Column(db.String(100))
     coupe = db.Column(db.String(50))
@@ -20,22 +23,14 @@ class Produit(db.Model):
     fsc = db.Column(db.String(50))
     historique = db.Column(db.Text)  # Stocké en JSON
 
-    def __init__(self, code, description=None, materiaux=None, categorie=None, po=None, emplacement=None, dimension=None, projet=None, quantite=0, cp=None, fournisseur=None, coupe=None, no_catalogue=None, fsc=None, historique=None):
+    # Relation many-to-many avec Projet via ProduitProjet
+    projets_associes = db.relationship("ProduitProjet", back_populates="produit", cascade="all, delete-orphan")
+
+    def __init__(self, code, **kwargs):
         self.code = code
-        self.description = description
-        self.materiaux = materiaux
-        self.categorie = categorie
-        self.po = po
-        self.emplacement = emplacement
-        self.dimension = dimension
-        self.projet = projet
-        self.quantite = quantite
-        self.cp = cp
-        self.fournisseur = fournisseur
-        self.coupe = coupe
-        self.no_catalogue = no_catalogue
-        self.fsc = fsc
-        self.historique = json.dumps(historique) if historique else json.dumps([])
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        self.historique = json.dumps(kwargs.get('historique', []))
 
     def ajouter_produit(self):
         db.session.add(self)
@@ -56,3 +51,15 @@ class Produit(db.Model):
         db.session.delete(self)
         db.session.commit()
         print(f"🗑️ Produit {self.code} supprimé avec succès.")
+
+    def associer_a_projet(self, projet, quantite):
+        """ Associe ce produit à un projet avec une quantité spécifique. """
+        if not projet:
+            print("⚠️ Projet invalide.")
+            return
+
+        lien = ProduitProjet(produit_id=self.id, projet_id=projet.id, quantite=quantite)
+        db.session.add(lien)
+        db.session.commit()
+        print(f"✅ Produit {self.code} ajouté au projet {projet.code} avec quantité {quantite}.")
+
