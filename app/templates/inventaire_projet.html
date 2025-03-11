@@ -1,59 +1,110 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>inventaire_projet - Polybois</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: white;
-            padding: 10px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 100px; /* Ajuste la hauteur */
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .return-link {
-            text-decoration: none;
-            font-size: 18px;
-            color: white;
-            background-color: #333;
-            padding: 8px 12px;
-            border-radius: 5px;
-        }
-
-        .return-link:hover {
-            background-color: #555;
-        }
-
-        .module-title {
-            font-size: 24px;
-            color: #333;
-            flex-grow: 1; 
-            text-align: center;
-        }
-
-        .logo-polybois {
-            height: 120px;
-        }
-
-    </style>
+  <meta charset="UTF-8">
+  <title>Inventaire Par Projet - Polybois</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: white;
+      padding: 10px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .return-link {
+      text-decoration: none;
+      font-size: 18px;
+      color: white;
+      background-color: #333;
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+    .return-link:hover {
+      background-color: #555;
+    }
+    .module-title {
+      font-size: 24px;
+      color: #333;
+      flex-grow: 1;
+      text-align: center;
+    }
+    .logo-polybois {
+      height: 120px;
+    }
+    .container {
+      margin: 20px auto;
+      width: 80%;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    select, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <a class="return-link" href="/">⬅️ Retour</a>
-        <h1 class="module-title">Inventaire Par Projet</h1>
-        <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
-    </header>
+  <header>
+    <a class="return-link" href="/">⬅️ Retour</a>
+    <h1 class="module-title">Inventaire Par Projet</h1>
+    <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
+  </header>
+
+  <div class="container">
+    <h2>Choisissez un projet actif</h2>
+    <!-- Dropdown pour sélectionner un projet -->
+    <label for="projetSelect">Projet :</label>
+    <select id="projetSelect">
+      <option value="">-- Sélectionner un projet --</option>
+      {% for projet in projets %}
+        <option value="{{ projet.code }}">{{ projet.code }}</option>
+      {% endfor %}
+    </select>
+    <button onclick="chargerInventaire()">Afficher l'inventaire</button>
+
+    <!-- Conteneur pour afficher l'inventaire du projet sélectionné -->
+    <div id="inventaireProjetContent"></div>
+  </div>
+
+  <script>
+    // Fonction pour charger l'inventaire du projet sélectionné
+    function chargerInventaire() {
+      const projetCode = document.getElementById("projetSelect").value;
+      if (!projetCode) {
+        alert("Veuillez sélectionner un projet.");
+        return;
+      }
+      // Appel AJAX vers la route qui renvoie l'inventaire (template partiel)
+      fetch(`/inventaire/projet_liste?projet=${encodeURIComponent(projetCode)}`)
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById("inventaireProjetContent").innerHTML = html;
+        })
+        .catch(err => console.error("Erreur lors du chargement de l'inventaire :", err));
+    }
+  </script>
 
 </body>
 </html>

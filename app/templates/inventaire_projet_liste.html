@@ -1,0 +1,25 @@
+<h3>Inventaire pour le projet : {{ projet.code }}</h3>
+{% if inventaire %}
+  <table>
+    <thead>
+      <tr>
+        <th>Code Produit</th>
+        <th>Description</th>
+        <th>Matériaux</th>
+        <th>Quantité attribuée</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in inventaire %}
+      <tr>
+        <td>{{ item.code }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.materiaux }}</td>
+        <td>{{ item.quantite }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Aucun produit n'est attribué à ce projet.</p>
+{% endif %}
