@@ -11,8 +11,6 @@ class Config:
     # Configurer l'URI de la base de données pour utiliser le fichier inventaire.db dans le dossier instance
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(INSTANCE_FOLDER, "inventaire.db")}')
 
-    # Chemin de base du projet
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
     # Dossier contenant les fichiers de données
     DATA_FOLDER = os.path.join(BASE_DIR, 'data')
