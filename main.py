@@ -1,3 +1,4 @@
+# yo ma poule 
 import webbrowser
 import threading
 from app import create_app
