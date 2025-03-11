@@ -1,0 +1,31 @@
+<table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Nom</th>
+        <th>Statut actuel</th>
+        <th>Modifier le statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for projet in projets %}
+      <tr>
+        <td>{{ projet.code }}</td>
+        <td>{{ projet.nom }}</td>
+        <td>{{ projet.statut }}</td>
+        <td>
+          <form action="{{ url_for('projet.finaliser_projet') }}" method="post" class="update-status">
+            <input type="hidden" name="project_id" value="{{ projet.id }}">
+            <select name="new_status" required>
+              <option value="en cours" {% if projet.statut == "en cours" %}selected{% endif %}>En cours</option>
+              <option value="finalisé" {% if projet.statut == "finalisé" %}selected{% endif %}>Finalisé</option>
+            </select>
+            <button type="submit">Mettre à jour</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+

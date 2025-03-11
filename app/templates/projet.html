@@ -1,143 +1,250 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Projet - Polybois</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-
-        header {
-            background-color: white;
-            padding: 10px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 100px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .return-link {
-            text-decoration: none;
-            font-size: 18px;
-            color: white;
-            background-color: #333;
-            padding: 8px 12px;
-            border-radius: 5px;
-        }
-
-        .return-link:hover {
-            background-color: #555;
-        }
-
-        .module-title {
-            font-size: 24px;
-            color: #333;
-            flex-grow: 1;
-            text-align: center;
-        }
-
-        .logo-polybois {
-            height: 120px;
-        }
-
-        .hidden { display: none; } /* Cache les sections non sélectionnées */
-
-        .container {
-            margin: 20px auto;
-            width: 60%;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            margin: 10px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        input, select {
-            padding: 10px;
-            margin: 10px;
-            width: 80%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Projet - Polybois</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: white;
+      padding: 10px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .return-link {
+      text-decoration: none;
+      font-size: 18px;
+      color: white;
+      background-color: #333;
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+    .return-link:hover {
+      background-color: #555;
+    }
+    .module-title {
+      font-size: 24px;
+      color: #333;
+      flex-grow: 1;
+      text-align: center;
+    }
+    .logo-polybois {
+      height: 120px;
+    }
+    .hidden { display: none; }
+    .container {
+      margin: 20px auto;
+      width: 60%;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    input, select {
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <a class="return-link" href="/">⬅️ Retour</a>
-        <h1 class="module-title">Module Projet</h1>
-        <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
-    </header>
+  <header>
+    <a class="return-link" href="/">⬅️ Retour</a>
+    <h1 class="module-title">Module Projet</h1>
+    <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
+  </header>
 
-    <div class="container">
-        <h2>📋 Options de projet</h2>
-        
-        <!-- Boutons pour afficher les options -->
-        <button onclick="toggleSection('formCreation')">➕ Créer un projet</button>
-        <button onclick="toggleSection('formModif')">🏗️ Modifier un projet</button>
-        <button onclick="toggleSection('formEnd')">Finaliser un projet</button>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div id="flash-messages">
-                    {% for category, message in messages %}
-                        <p class="flash-message {{ category }}">{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        
-        <!-- Section Création de projet -->
-        <div id="formCreation" class="hidden">
-            <h3>🛠️ Création de Projet</h3>
-            <p>⚙️ Cette section sera bientôt disponible.</p>
-        </div>
+  <div id="confirmationMessage" style="display:none; padding: 10px; margin: 10px auto; width: 60%; border: 1px solid #4CAF50; background-color: #d4edda; color: #155724; border-radius: 5px; position: relative;">
+    <span id="confirmationText"></span>
+    <button onclick="hideConfirmation()" style="position: absolute; top: 5px; right: 5px; background: transparent; border: none; font-size: 16px; cursor: pointer;">✖</button>
+  </div>
+  
 
-        <!-- Section de modifiation Projet (à implémenter) -->
-        <div id="formModif" class="hidden">
-            <h3>🏗️ modification de projet</h3>
-            <p>⚙️ Cette section sera bientôt disponible.</p>
+  <div class="container">
+    <h2>📋 Options de projet</h2>
+    
+    <!-- Boutons pour afficher les options -->
+    <button onclick="toggleSection('formCreation')">➕ Créer un projet</button>
+    <button onclick="toggleSection('formModif')">🏗️ Modifier un projet</button>
+    <button onclick="toggleSection('formEnd')">Finaliser un projet</button>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-messages">
+          {% for category, message in messages %}
+            <p class="flash-message {{ category }}">{{ message }}</p>
+          {% endfor %}
         </div>
+      {% endif %}
+    {% endwith %}
 
-        <!-- Section finalisation de projet-->
-        <div id="formEnd" class="hidden">
-            <h3>Finalisation de Projet</h3>
-            <p>⚙️ Cette section sera bientôt disponible.</p>
-        </div>
+    <!-- Section Création de projet -->
+    <div id="formCreation" class="hidden">
+        <h3>🛠️ Création de Projet</h3>
+        <div id="creationMessage"></div>
+        <form id="creationForm" action="{{ url_for('projet.creer_projet') }}" method="post">
+        <input type="text" name="code" placeholder="Code du projet" required autocomplete="off">
+        <input type="text" name="nom" placeholder="Nom du projet" required>
+        <input type="date" name="date_creation" placeholder="Date de création" required>
+        <input type="text" name="responsable" placeholder="Responsable" required>
+        <!-- Champ caché pour définir le statut à "en cours" -->
+        <input type="hidden" name="statut" value="en cours">
+        <button type="submit">Créer le projet</button>
+        </form>
+    </div>
+  
+  
+
+    <!-- Section de modification de projet (à implémenter) -->
+    <div id="formModif" class="hidden">
+      <h3>🏗️ Modification de projet</h3>
+      <p>⚙️ Cette section sera bientôt disponible.</p>
     </div>
 
-    <script>
-        function toggleSection(sectionId) {
-            var sections = ["formCreation", "formModif", "formEnd"];
-            sections.forEach(id => {
-                document.getElementById(id).classList.add("hidden");
-            });
-            document.getElementById(sectionId).classList.remove("hidden");
-        }
+    <!-- Section finalisation de projet -->
+    <div id="formEnd" class="hidden">
+      <h3>Projet Actif</h3>
+      <!-- Conteneur qui sera rempli dynamiquement -->
+      <div id="finalisationContent">
+        <!-- La liste des projets en cours sera insérée ici -->
+      </div>
+    </div>
+  </div>
 
-        function toggleField(fieldId) {
-            var field = document.getElementById(fieldId);
-            field.classList.toggle("hidden");
-        }
-    </script>
+  <script>
+    // Affiche le message de confirmation dans le conteneur dédié
+    function showConfirmation(message, status) {
+      const confirmationDiv = document.getElementById("confirmationMessage");
+      const confirmationText = document.getElementById("confirmationText");
+  
+      // Personnalise le style en fonction du statut
+      if (status === "success") {
+        confirmationDiv.style.backgroundColor = "#d4edda";
+        confirmationDiv.style.color = "#155724";
+        confirmationDiv.style.borderColor = "#4CAF50";
+      } else {
+        confirmationDiv.style.backgroundColor = "#f8d7da";
+        confirmationDiv.style.color = "#721c24";
+        confirmationDiv.style.borderColor = "#f5c6cb";
+      }
+  
+      confirmationText.textContent = message;
+      confirmationDiv.style.display = "block";
+  
+      // Masquer automatiquement après 5 secondes
+      setTimeout(hideConfirmation, 5000);
+    }
+  
+    // Masque le conteneur de confirmation
+    function hideConfirmation() {
+      document.getElementById("confirmationMessage").style.display = "none";
+    }
+  
+    // Fonction qui gère l'affichage des sections
+    function toggleSection(sectionId) {
+      const sections = ["formCreation", "formModif", "formEnd"];
+      sections.forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      document.getElementById(sectionId).classList.remove("hidden");
+  
+      // Si la section "Finaliser un projet" est affichée, charger dynamiquement le contenu
+      if (sectionId === "formEnd") {
+        fetch("/projet/finaliser_data")
+          .then(response => response.text())
+          .then(html => {
+            document.getElementById("finalisationContent").innerHTML = html;
+            attachUpdateListeners(); // Attache les écouteurs aux formulaires injectés
+          })
+          .catch(err => console.error("Erreur lors du chargement :", err));
+      }
+    }
+  
+    // Fonction pour attacher les écouteurs sur les formulaires de mise à jour (finalisation)
+    function attachUpdateListeners() {
+      document.querySelectorAll("form.update-status").forEach(form => {
+        form.addEventListener("submit", function(e) {
+          e.preventDefault(); // Empêche le rechargement de la page
+          const formData = new FormData(this);
+          fetch(this.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-Requested-With": "XMLHttpRequest" // Indique une requête AJAX
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            showConfirmation(data.message, data.status);
+            // Recharge la section pour mettre à jour la liste
+            toggleSection("formEnd");
+          })
+          .catch(error => console.error("Erreur lors de la mise à jour :", error));
+        });
+      });
+    }
+  
+    // Fonction pour attacher l'écouteur sur le formulaire de création
+    function attachCreationListener() {
+      const creationForm = document.getElementById("creationForm");
+      if (creationForm) {
+        creationForm.addEventListener("submit", function(e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          fetch(this.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            showConfirmation(data.message, data.status);
+            // Réinitialiser le formulaire en cas de succès
+            if (data.status === "success") {
+              creationForm.reset();
+            }
+          })
+          .catch(error => console.error("Erreur lors de la création :", error));
+        });
+      }
+    }
+  
+    // Attache les écouteurs lorsque le DOM est prêt
+    document.addEventListener('DOMContentLoaded', function() {
+      attachCreationListener();
+      // Optionnel : attacher les update listeners si la section finalisation est déjà visible
+      if (!document.getElementById("formEnd").classList.contains("hidden")) {
+        attachUpdateListeners();
+      }
+    });
+  </script>
+  
+
+  
 
 </body>
 </html>
-
