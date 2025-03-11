@@ -17,17 +17,28 @@ def inventaire_projet():
 
 @inventaire_bp.route("/general")
 def inventaire_general():
-    return render_template("inventaire_general.html")
+    produits = Produit.query.all()
+    return render_template("inventaire_general.html", produits=produits)
+
 
 @inventaire_bp.route("/libre")
 def inventaire_libre():
-    # Affiche tous les produits dont la quantité disponible est supérieure à zéro
-    produits_libres = Produit.query.filter(Produit.quantite > 0).all()
+    produits = Produit.query.all()
+    produits_libres = []
+    for produit in produits:
+        # Calculer la quantité attribuée pour ce produit
+        total_attribue = sum(assoc.quantite for assoc in produit.projets_associes)
+        # La quantité libre est la différence entre le stock total et la quantité attribuée
+        free = produit.quantite - total_attribue
+        if free > 0:
+            produit.free = free
+            produits_libres.append(produit)
     return render_template("inventaire_libre.html", produits=produits_libres)
 
-@inventaire_bp.route("/quincaillerie")
-def quincaillerie():
-    return render_template("quincaillerie.html")
+
+@inventaire_bp.route("/inventaire_entrepot")
+def inventaire_entrepot():
+    return render_template("inventaire_entrepot.html")
 
 @inventaire_bp.route("/attribuer_projet", methods=["POST"])
 def attribuer_projet():
@@ -68,9 +79,6 @@ def attribuer_projet():
         # Créer une nouvelle association
         association = ProduitProjet(produit_id=produit.id, projet_id=projet.id, quantite=quantite)
         db.session.add(association)
-
-    # Mettre à jour le stock du produit
-    produit.quantite -= quantite
 
     try:
         db.session.commit()

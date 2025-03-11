@@ -1,117 +1,156 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Inventaire Libre - Polybois</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-        .container {
-            margin: 20px auto;
-            width: 80%;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: center; }
-        input { padding: 10px; width: 50%; margin-bottom: 10px; }
-        #noProducts { color: red; display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Inventaire Libre - Polybois</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: white;
+      padding: 10px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100px; /* Ajuste la hauteur */
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .return-link {
+      text-decoration: none;
+      font-size: 18px;
+      color: white;
+      background-color: #333;
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+    .return-link:hover {
+      background-color: #555;
+    }
+    .module-title {
+      font-size: 24px;
+      color: #333;
+      flex-grow: 1; 
+      text-align: center;
+    }
+    .logo-polybois {
+      height: 120px;
+    }
+    .container {
+      margin: 20px auto;
+      width: 80%;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <a class="return-link" href="/">⬅️ Retour</a>
-        <h1 class="module-title">Inventaire Libre</h1>
-    </header>
 
-<div class="container">
-    <h2>🔍 Rechercher un produit</h2>
-    <input type="text" id="search" onkeyup="filterProduits()" placeholder="Recherche...">
+  <header>
+    <a class="return-link" href="/inventaire">⬅️ Retour</a>
+    <h1 class="module-title">Inventaire Libre</h1>
+    <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
+  </header>
 
+  <div class="container">
+    <h2>Liste des produits en stock libre</h2>
     <table id="produits">
-        <thead>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Matériaux</th>
+          <th>Quantité Totale</th>
+          <th>Quantité Libre</th>
+          <th>Emplacement</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if produits %}
+          {% for produit in produits %}
             <tr>
-                <th>Code</th>
-                <th>Description</th>
-                <th>Matériaux</th>
-                <th>Quantité</th>
-                <th>Emplacement</th>
-                <th>Actions</th>
+              <td>{{ produit.code }}</td>
+              <td>{{ produit.description }}</td>
+              <td>{{ produit.materiaux }}</td>
+              <td>{{ produit.quantite }}</td>
+              <td>{{ produit.free }}</td>
+              <td>{{ produit.emplacement }}</td>
+              <td>
+                <button onclick="attribuer_projet('{{ produit.code }}')">Attribuer projet</button>
+              </td>
             </tr>
-        </thead>
-        <tbody>
-            {% if produits %}
-                {% for produit in produits %}
-                <tr>
-                    <td>{{ produit.code }}</td>
-                    <td>{{ produit.description }}</td>
-                    <td>{{ produit.materiaux }}</td>
-                    <td>{{ produit.quantite }}</td>
-                    <td>{{ produit.emplacement }}</td>
-                    <td>
-                        <button onclick="attribuer_projet('{{ produit.code }}')">Attribuer projet</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr><td colspan="6">⚠️ Aucun produit libre trouvé.</td></tr>
-            {% endif %}
-        </tbody>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="7">⚠️ Aucun produit libre trouvé.</td></tr>
+        {% endif %}
+      </tbody>
     </table>
-    
-    <p id="noProducts" style="display:none; color:red;">⚠️ Aucun produit trouvé avec ces critères.</p>
-</div>
+  </div>
 
-<script>
-function filterProduits() {
-    let searchValue = document.getElementById("search").value.toLowerCase();
-    let rows = document.querySelectorAll("#produits tbody tr");
-    let found = false;
-
-    rows.forEach(row => {
+  <script>
+    // Fonction de filtrage si nécessaire
+    function filterProduits() {
+      let searchValue = document.getElementById("search").value.toLowerCase();
+      let rows = document.querySelectorAll("#produits tbody tr");
+      let found = false;
+      rows.forEach(row => {
         let code = row.cells[0].textContent.toLowerCase();
         let description = row.cells[1].textContent.toLowerCase();
         let emplacement = row.cells[4].textContent.toLowerCase();
-
         if (code.includes(searchValue) || description.includes(searchValue) || emplacement.includes(searchValue)) {
-            row.style.display = "";
-            found = true;
+          row.style.display = "";
+          found = true;
         } else {
-            row.style.display = "none";
+          row.style.display = "none";
         }
-    });
+      });
+      document.getElementById("noProducts").style.display = found ? "none" : "block";
+    }
 
-    document.getElementById("noProducts").style.display = found ? "none" : "block";
-}
-
-function attribuer_projet(code) {
-    let projet = prompt("Code du projet ?");
-    if (!projet) {
+    // Fonction pour attribuer un produit à un projet
+    function attribuer_projet(code) {
+      let projet = prompt("Code du projet ?");
+      if (!projet) {
         alert("Vous devez saisir un code de projet.");
         return;
-    }
-    let quantite = parseInt(prompt("Quantité à attribuer ?"), 10);
-    if (!quantite || quantite <= 0) {
+      }
+      let quantite = parseInt(prompt("Quantité à attribuer ?"), 10);
+      if (!quantite || quantite <= 0) {
         alert("Quantité invalide !");
         return;
-    }
-
-    fetch("/inventaire/attribuer_projet", {
+      }
+      fetch("/inventaire/attribuer_projet", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({code: code, projet: projet, quantite: quantite})
-    })
-    .then(response => response.json())
-    .then(data => {
+      })
+      .then(response => response.json())
+      .then(data => {
         alert(data.message);
-        location.reload();  // Recharger la page pour mettre à jour l'inventaire, si nécessaire
-    })
-    .catch(error => alert("❌ Erreur : " + error));
-}
-</script>
+        location.reload(); // Rafraîchit la page pour mettre à jour l'inventaire libre
+      })
+      .catch(error => alert("❌ Erreur : " + error));
+    }
+  </script>
+
 </body>
 </html>
