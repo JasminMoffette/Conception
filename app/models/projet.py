@@ -16,6 +16,9 @@ class Projet(db.Model):
     commandes_production = db.relationship("CommandeProduction", backref="projet", cascade="all, delete-orphan")
     produits_associes = db.relationship("ProduitProjet", back_populates="projet", cascade="all, delete-orphan")
 
+    # Relation many-to-many avec Produit via ProduitProjet
+    produits_associes = db.relationship("ProduitProjet", back_populates="projet", cascade="all, delete-orphan")
+
 
     def __init__(self, code, **kwargs):
         self.code = code

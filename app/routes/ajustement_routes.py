@@ -18,9 +18,8 @@ def creer_produit():
 
     valid_attributs = {
         key: request.form.get(key)
-        for key in ["description", "materiaux", "categorie", "po",
-                    "emplacement", "dimension", "projet", "quantite",
-                    "cp", "fournisseur", "coupe", "no_catalogue", "fsc"]
+        for key in ["description", "materiaux", "categorie", "quantite"]
+        
         if request.form.get(key)
     }
 

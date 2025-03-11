@@ -1,9 +1,9 @@
-##### Pour faire fonctionner le code #####
-# 1. python3 -m venv venv                #
-# 2. source venv/bin/activate            #
-# 3. pip install -requirements.txt       #
-# 4. aller run le main.py!               #
-##########################################
+##### Pour faire fonctionner le code sur mac #####
+# 1. python3 -m venv venv                        #
+# 2. source venv/bin/activate                    #
+# 3. pip install -requirements.txt               #
+# 4. aller run le main.py!                       #
+##################################################
 
 
 
