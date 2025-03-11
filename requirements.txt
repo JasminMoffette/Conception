@@ -1,3 +1,12 @@
+##### Pour faire fonctionner le code #####
+# 1. python3 -m venv venv                #
+# 2. source venv/bin/activate            #
+# 3. pip install -requirements.txt       #
+# 4. aller run le main.py!               #
+##########################################
+
+
+
 alembic==1.15.1
 blinker==1.9.0
 click==8.1.8
@@ -19,3 +28,6 @@ SQLAlchemy==2.0.38
 typing_extensions==4.12.2
 tzdata==2025.1
 Werkzeug==3.1.3
+
+
+
