@@ -1,6 +1,8 @@
 from app import db
 
+# ====================================================
 # Association entre Produit et Projet (many-to-many)
+# ====================================================
 class ProduitProjet(db.Model):
     __tablename__ = 'produitprojet'
     id = db.Column(db.Integer, primary_key=True)
@@ -20,8 +22,9 @@ class ProduitProjet(db.Model):
     def __repr__(self):
         return f"<ProduitProjet produit_id={self.produit_id}, projet_id={self.projet_id}, quantite={self.quantite}>"
 
-
+# ====================================================
 # Association entre Achat et Produit pour détailler un Achat
+# ====================================================
 class LigneAchat(db.Model):
     __tablename__ = 'ligneachat'
     id = db.Column(db.Integer, primary_key=True)
@@ -40,9 +43,10 @@ class LigneAchat(db.Model):
 
     def __repr__(self):
         return f"<LigneAchat achat_id={self.achat_id}, produit_id={self.produit_id}, quantite={self.quantite}>"
-    
 
+# ====================================================
 # Association entre CommandeProduction et Produit pour détailler une commande de production
+# ====================================================
 class LigneCommandeProduction(db.Model):
     __tablename__ = 'lignecommandeproduction'
     id = db.Column(db.Integer, primary_key=True)
@@ -61,8 +65,10 @@ class LigneCommandeProduction(db.Model):
 
     def __repr__(self):
         return f"<LigneCommandeProduction commande_production_id={self.commande_production_id}, produit_id={self.produit_id}, quantite={self.quantite}>"
-    
-# relation entre achat et reception
+
+# ====================================================
+# Association entre Achat et Reception (détail des réceptions)
+# ====================================================
 class LigneReception(db.Model):
     __tablename__ = 'lignereception'
     id = db.Column(db.Integer, primary_key=True)
@@ -72,6 +78,8 @@ class LigneReception(db.Model):
 
     # Relations bidirectionnelles
     reception = db.relationship("Reception", back_populates="lignes_reception")
+    # Ici, on utilise un backref car la relation vers Produit peut ne pas nécessiter d'être consultée de manière bidirectionnelle,
+    # mais c'est à toi de décider ; j'ai conservé un backref pour cohérence.
     produit = db.relationship("Produit", backref="lignes_reception_detail")
 
     def __init__(self, reception_id, produit_id, quantite_recue):
@@ -81,10 +89,10 @@ class LigneReception(db.Model):
 
     def __repr__(self):
         return f"<LigneReception reception_id={self.reception_id}, produit_id={self.produit_id}, quantite_recue={self.quantite_recue}>"
-   
 
-
+# ====================================================
 # Association entre Produit et Emplacement pour le suivi des stocks
+# ====================================================
 class Stock(db.Model):
     __tablename__ = 'stock'
     id = db.Column(db.Integer, primary_key=True)
@@ -103,4 +111,3 @@ class Stock(db.Model):
 
     def __repr__(self):
         return f"<Stock produit_id={self.produit_id}, emplacement_id={self.emplacement_id}, quantite={self.quantite}>"
-

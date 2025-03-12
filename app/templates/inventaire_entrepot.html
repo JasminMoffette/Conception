@@ -2,25 +2,24 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inventaire Entrepot- Polybois</title>
+    <title>Inventaire Entrepôt - Polybois</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
-
         header {
             background-color: white;
             padding: 10px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 100px; /* Ajuste la hauteur */
+            height: 100px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
-
         .return-link {
             text-decoration: none;
             font-size: 18px;
@@ -29,31 +28,67 @@
             padding: 8px 12px;
             border-radius: 5px;
         }
-
         .return-link:hover {
             background-color: #555;
         }
-
         .module-title {
             font-size: 24px;
             color: #333;
-            flex-grow: 1; 
+            flex-grow: 1;
             text-align: center;
         }
-
         .logo-polybois {
             height: 120px;
         }
-
+        /* Conteneur des icônes */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 50px auto;
+            width: 80%;
+        }
+        /* Style des "icon-card" sans image */
+        .icon-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+            width: 200px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+        .icon-card:hover {
+            transform: scale(1.1);
+            background-color: #f0f0f0;
+        }
+        .icon-card p {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <a class="return-link" href="/inventaire">⬅️ Retour</a>
-        <h1 class="module-title">Inventaire par Entrepot</h1>
+        <a class="return-link" href="/">⬅️ Retour</a>
+        <h1 class="module-title">Inventaire Entrepôt</h1>
         <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
     </header>
+
+    <!-- Conteneur des icônes d'entrepôt -->
+    <div class="container">
+        {% set entrepots = ['entrepot_a', 'entrepot_b', 'entrepot_c', 'dome', 'corian', 'shipping', 'strat', 'exterieur', 'scie_a_panneau'] %}
+        {% for e in entrepots %}
+            <a href="{{ url_for('inventaire.inventaire_entrepot_detail', entrepot=e) }}" class="icon-card">
+                <p>{{ e|capitalize }}</p>
+            </a>
+        {% endfor %}
+    </div>
 
 </body>
 </html>

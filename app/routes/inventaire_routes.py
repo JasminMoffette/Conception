@@ -11,8 +11,10 @@ def inventaire():
 
 @inventaire_bp.route("/inventaire_projet")
 def inventaire_projet():
-    projets = Projet.query.all()
-    return render_template("inventaire_projet.html", projets=projets)
+    # Filtrer les projets actifs (par exemple, ceux dont l'attribut 'actif' est True)
+    projets_actifs = Projet.query.filter_by(statut="en cours").all()
+    return render_template("inventaire_projet.html", projets=projets_actifs)
+
 
 
 @inventaire_bp.route("/general")
@@ -121,6 +123,20 @@ def projet_liste():
 
     # Rendu d'un template partiel pour afficher l'inventaire
     return render_template("inventaire_projet_liste.html", inventaire=inventaire, projet=projet)
+
+@inventaire_bp.route("/entrepot_detail")
+def inventaire_entrepot_detail():
+    entrepot = request.args.get("entrepot")
+    if not entrepot:
+        return "Aucun entrepôt sélectionné.", 400
+
+    # Récupérer les produits pour cet entrepôt (selon votre logique)
+    # Ici, on suppose que l'emplacement du produit est enregistré dans un attribut stock.cellule
+    # et que vous avez une relation entre Produit et Stock.
+    produits = Produit.query.filter(Produit.stocks.any(Stock.entrepot == entrepot)).all()
+    
+    return render_template("inventaire_entrepot_detail.html", produits=produits, entrepot=entrepot)
+
 
 
 

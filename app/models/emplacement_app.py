@@ -2,13 +2,17 @@ import tkinter as tk
 from tkinter import Toplevel
 import pandas as pd
 import os
-from config import Config  # Importer la classe de configuration
+from config import Config  # Import de la configuration
 
-# Construire le chemin complet vers le fichier Excel
+# Construire le chemin complet vers le fichier Excel en utilisant Config.DATA_FOLDER
 data_file_path = os.path.join(Config.DATA_FOLDER, 'DATA_Plan_entrepot.xlsx')
 
 # Charger le plan global depuis la feuille "plan"
-df_plan = pd.read_excel(data_file_path, sheet_name="plan")
+try:
+    df_plan = pd.read_excel(data_file_path, sheet_name="plan")
+except Exception as e:
+    print(f"Erreur lors du chargement du plan global : {e}")
+    df_plan = None
 
 class EmplacementApp:
     def __init__(self, root):
@@ -19,20 +23,31 @@ class EmplacementApp:
         self.canvas = tk.Canvas(self.root, width=1600, height=800, bg="white")
         self.canvas.pack()
         
-        self.draw_plan()
-        self.draw_walls()
+        # Vérifier si le plan a bien été chargé
+        if df_plan is not None:
+            self.draw_plan()
+            self.draw_walls()
+        else:
+            tk.Label(self.root, text="Plan global non disponible", font=("Arial", 16)).pack(pady=20)
     
     def draw_plan(self):
         """Affiche le plan global avec les noms d'entrepôts interactifs."""
+        # On s'assure que df_plan n'est pas vide et contient les colonnes nécessaires
+        if df_plan is None:
+            return
         for _, row in df_plan.dropna(subset=["Value", "Position X", "Position Y"]).iterrows():
             x, y = row["Position X"], row["Position Y"]
             name = row["Value"]
+            # Inverser la coordonnée Y pour correspondre à l'affichage (si c'est le besoin)
             text_id = self.canvas.create_text(x, 800 - y, text=name, font=("Arial", 16, "bold"), fill="blue")
-            # Lors d'un clic, on ouvre l'entrepôt correspondant
+            # Liaison du clic pour ouvrir l'entrepôt correspondant
             self.canvas.tag_bind(text_id, "<Button-1>", lambda event, n=name: self.open_entrepot(n))
     
     def draw_walls(self):
         """Dessine les murs du plan global."""
+        if df_plan is None:
+            return
+        # Filtrer pour obtenir les lignes définissant les murs
         df_murs = df_plan.dropna(subset=["Start X", "Start Y", "End X", "End Y"])
         for _, row in df_murs.iterrows():
             x1, y1 = row["Start X"], row["Start Y"]
@@ -51,18 +66,16 @@ class EmplacementApp:
         canvas = tk.Canvas(new_window, width=1600, height=800, bg="lightgrey")
         canvas.pack()
         
-        # Ici, on détermine le nom de la feuille à charger.
-        # Par exemple, si l'entrepôt s'appelle "Entrepôt A", on charge la feuille "entrepot_A"
-        feuille = name.lower().replace(" ", "_")  # adapte si besoin le mapping des noms
-        
+        # Utiliser le même chemin absolu pour charger le fichier Excel
         try:
-            df_interieur = pd.read_excel("DATA_Plan_entrepot.xlsx", sheet_name=feuille)
-            # Afficher les éléments (noms et emplacements) du plan intérieur
+            # On construit le nom de la feuille à partir du nom de l'entrepôt (à adapter selon ton mapping)
+            feuille = name.lower().replace(" ", "_")
+            df_interieur = pd.read_excel(data_file_path, sheet_name=feuille)
             for _, row in df_interieur.dropna(subset=["Value", "Position X", "Position Y"]).iterrows():
                 x, y = row["Position X"], row["Position Y"]
                 item_name = row["Value"]
                 canvas.create_text(x, 800 - y, text=item_name, font=("Arial", 14, "bold"), fill="green")
-            # Dessiner également les murs internes, s'ils sont définis
+            # Dessiner les murs internes, s'ils sont définis
             df_murs_int = df_interieur.dropna(subset=["Start X", "Start Y", "End X", "End Y"])
             for _, row in df_murs_int.iterrows():
                 x1, y1 = row["Start X"], row["Start Y"]
