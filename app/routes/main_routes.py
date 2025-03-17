@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, current_app
 
-main_bp = Blueprint("main_bp", __name__)
+main_bp = Blueprint("main", __name__)
 
 # ====================================================
 # Route principale de l'application

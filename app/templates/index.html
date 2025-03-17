@@ -2,8 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <!-- Meta viewport pour une bonne adaptabilité sur mobiles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Stocks - Polybois</title>
     <style>
+        /* Styles globaux */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -12,8 +15,8 @@
             text-align: center;
         }
         
+        /* En-tête */
         header {
-
             background-color: #333;
             color: white;
             padding: 15px;
@@ -21,7 +24,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            
         }
 
         header img {
@@ -29,6 +31,7 @@
             height: 120px; 
         }
 
+        /* Barre de navigation */
         nav {
             background-color: #555;
             padding: 10px;
@@ -38,6 +41,7 @@
         nav ul {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
         nav ul li {
@@ -55,10 +59,12 @@
             text-decoration: underline;
         }
 
+        /* Contenu principal */
         main {
             padding: 20px;
         }
 
+        /* Tableau de bord et cartes */
         .dashboard {
             display: flex;
             justify-content: center;
@@ -86,34 +92,36 @@
             font-size: 18px;
             color: #777;
         }
-
     </style>
 </head>
 <body>
 
+    <!-- En-tête -->
     <header>
         <img src="{{ url_for('static', filename='images/poly.png') }}" alt="Logo Polybois" width="150">
         <h1>Gestion des Stocks - Polybois</h1>
     </header>
     
-
+    <!-- Navigation principale -->
     <nav>
         <ul>
-            <li><a href="/projet">Projet</a></li>
-            <li><a href="/inventaire">Inventaire</a></li>
-            <li><a href="{{ url_for('achat_bp.achat') }}">Achat</a></li>
-            <li><a href="/reception">Réception</a></li>
-            <li><a href="/production">Production</a></li>
-            <li><a href="/ajustement">Ajustement</a></li>
-            <li><a href="/plan">📍 Plan de l'Entreprise</a></li> 
+            <li><a href="{{ url_for('projet.projet') }}">Projet</a></li>
+            <li><a href="{{ url_for('inventaire.inventaire') }}">Inventaire</a></li>
+            <li><a href="{{ url_for('achat.achat') }}">Achat</a></li>
+            <li><a href="{{ url_for('reception.reception') }}">Réception</a></li>
+            <li><a href="{{ url_for('production.production') }}">Production</a></li>
+            <li><a href="{{ url_for('ajustement.ajustement') }}">Ajustement</a></li>
+            <li><a href="{{ url_for('main.plan') }}">📍 Plan de l'Entreprise</a></li> 
         </ul>
     </nav>
 
+    <!-- Contenu principal : Tableau de bord -->
     <main>
         <h1>📊 Tableau de bord</h1>
         <p>Bienvenue sur le système de gestion des stocks de Polybois. Consultez les informations en temps réel.</p>
 
         <div class="dashboard">
+            <!-- Carte exemple pour "Inventaire Faible" -->
             <div class="card">
                 <h2>⚠️ Inventaire Faible</h2>
             </div>

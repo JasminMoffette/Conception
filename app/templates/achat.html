@@ -87,7 +87,7 @@
 
         
         <h2>Créer une commande d'achat</h2>
-        <form id="achatForm" action="{{ url_for('achat_bp.creer_achat') }}" method="post">
+        <form id="achatForm" action="{{ url_for('achat.creer_achat') }}" method="post">
             <input type="text" name="po" placeholder="Numéro de commande" required>
             <input type="date" name="date_achat" required>
             <input type="text" name="fournisseur" placeholder="Fournisseur" required>
@@ -111,7 +111,7 @@
         </form>
         <br>
         <h2>Importer une commande d'achat</h2>
-        <form id="uploadForm" action="{{ url_for('achat_bp.upload_commande') }}" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" action="{{ url_for('achat.upload_commande') }}" method="post" enctype="multipart/form-data">
             <input type="file" name="file" required>
             <button type="submit">Importer la commande</button>
         </form>

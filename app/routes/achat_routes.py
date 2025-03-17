@@ -7,7 +7,7 @@ from app.models.achat import Achat
 from app.models.associations import LigneAchat  
 from app.models.projet import Projet
 
-achat_bp = Blueprint('achat_bp', __name__)
+achat_bp = Blueprint('achat', __name__)
 
 # ====================================================
 # Route pour afficher le formulaire de commande d'achat
