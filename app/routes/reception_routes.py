@@ -4,5 +4,9 @@ reception_bp = Blueprint('reception', __name__)
 
 @reception_bp.route("/")
 def reception():
+    """
+    Affiche la page principale du module Réception.
+    (À développer ultérieurement.)
+    """
     return render_template("reception.html")
 
