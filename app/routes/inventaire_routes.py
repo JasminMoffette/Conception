@@ -166,3 +166,16 @@ def projet_liste():
 
 
 
+@inventaire_bp.route("/entrepot_detail")
+def inventaire_entrepot_detail():
+     entrepot = request.args.get("entrepot")
+     if not entrepot:
+         return "Aucun entrepôt sélectionné.", 400
+ 
+     # Récupérer les produits pour cet entrepôt (selon votre logique)
+     # Ici, on suppose que l'emplacement du produit est enregistré dans un attribut stock.cellule
+     # et que vous avez une relation entre Produit et Stock.
+     produits = Produit.query.filter(Produit.stocks.any(Stock.entrepot == entrepot)).all()
+     
+     return render_template("inventaire_entrepot_detail.html", produits=produits, entrepot=entrepot)
+
