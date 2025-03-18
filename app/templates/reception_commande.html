@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails de la commande d'achat - Réception</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Styles pour la table et le formulaire */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 5px;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #message {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Détails de la commande d'achat : {{ achat.po }}</h2>
+
+    <!-- Formulaire de confirmation de réception -->
+    <form id="confirmationForm" method="POST" action="{{ url_for('reception.confirmer_reception') }}">
+        <!-- Champ caché pour l'ID de la commande d'achat -->
+        <input type="hidden" name="achat_id" value="{{ achat.id }}">
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Description</th>
+                    <th>Quantité commandée</th>
+                    <th>Quantité déjà reçue</th>
+                    <th>Quantité à recevoir</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in details %}
+                <tr>
+                    <td>{{ detail.code }}</td>
+                    <td>{{ detail.description }}</td>
+                    <td>{{ detail.quantite_commandee }}</td>
+                    <td>{{ detail.quantite_recue }}</td>
+                    <td>
+                        <!-- L'input porte le nom "qte_<produit_id>" -->
+                        <input type="number" name="qte_{{ detail.produit_id }}" min="0" max="{{ detail.quantite_manquante }}"
+                               value="{{ detail.quantite_manquante }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Confirmer la réception</button>
+    </form>
+
+</body>
+</html>
+

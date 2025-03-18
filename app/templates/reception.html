@@ -1,27 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Réception - Polybois</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* Styles généraux */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
         }
-
         header {
             background-color: white;
             padding: 10px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 100px; /* Ajuste la hauteur */
+            height: 100px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
-
         .return-link {
             text-decoration: none;
             font-size: 18px;
@@ -30,36 +29,190 @@
             padding: 8px 12px;
             border-radius: 5px;
         }
-
         .return-link:hover {
             background-color: #555;
         }
-
         .module-title {
             font-size: 24px;
             color: #333;
             flex-grow: 1;
             text-align: center;
         }
-
         .logo-polybois {
-            height: 120px; 
+            height: 120px;
         }
-
+        main {
+            padding: 20px;
+        }
+        form {
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .details {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
+    <!-- En-tête -->
     <header>
         <a class="return-link" href="/">⬅️ Retour</a>
         <h1 class="module-title">📦 Module Réception</h1>
         <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
     </header>
 
-        <div class="card">
-            <h2>🚚 Commandes en attente</h2>
+    <main>
+        <!-- Formulaire de sélection du projet et de la commande d'achat -->
+        <form id="receptionForm">
+            <h2>Sélection de la commande à réceptionner</h2>
+            <!-- Sélection du projet -->
+            <label for="projetSelect">Projet :</label>
+            <select id="projetSelect" name="projet_id" required>
+                <option value="">-- Sélectionnez un projet --</option>
+                {% for projet in projets %}
+                    <option value="{{ projet.id }}">{{ projet.code }} - {{ projet.nom }}</option>
+                {% endfor %}
+            </select>
+            <!-- Sélection de la commande d'achat (PO) -->
+            <label for="achatSelect">Commande d'achat (PO) :</label>
+            <select id="achatSelect" name="achat_id" required>
+                <option value="">-- Sélectionnez une commande --</option>
+                <!-- Ce dropdown sera rempli via JavaScript en fonction du projet sélectionné -->
+            </select>
+            <button type="button" onclick="chargerCommandes()">Charger les commandes</button>
+        </form>
+
+        <!-- Zone d'affichage des détails de la commande -->
+        <div class="details" id="detailsCommande">
+            <!-- La table des produits sera chargée ici après sélection d'une commande -->
         </div>
+
+        <!-- Formulaire de confirmation de réception (affiché une fois les détails chargés) -->
+        <form id="confirmationForm" style="display:none;" onsubmit="confirmerReception(event)">
+            <input type="hidden" id="confirmationAchatId" name="achat_id">
+            <h2>Confirmer la réception</h2>
+            <div id="produitsReception">
+                <!-- Pour chaque produit, afficher les informations et un input pour saisir la quantité reçue -->
+            </div>
+            <button type="submit">Confirmer la réception</button>
+        </form>
+    </main>
+
+    <script>
+        // Fonction pour charger dynamiquement les commandes d'achat associées au projet sélectionné
+        function chargerCommandes() {
+            const projetSelect = document.getElementById("projetSelect");
+            const projetId = projetSelect.value;
+            if (!projetId) {
+                alert("Veuillez sélectionner un projet.");
+                return;
+            }
+            // Appel à l'API pour récupérer les commandes d'achat pour le projet sélectionné
+            fetch(`/reception/api/commandes/${projetId}`)
+                .then(response => response.json())
+                .then(commandes => {
+                    const achatSelect = document.getElementById("achatSelect");
+                    achatSelect.innerHTML = '<option value="">-- Sélectionnez une commande --</option>';
+                    if (commandes.length === 0) {
+                        alert("Aucune commande d'achat trouvée pour ce projet.");
+                    } else {
+                        commandes.forEach(cmd => {
+                            let option = document.createElement("option");
+                            option.value = cmd.id;
+                            option.textContent = cmd.po;
+                            achatSelect.appendChild(option);
+                        });
+                    }
+                    // Déclenche le chargement des détails de commande lors de la sélection
+                    achatSelect.onchange = chargerDetailsCommande;
+                })
+                .catch(error => {
+                    console.error("Erreur lors du chargement des commandes :", error);
+                    alert("Erreur lors du chargement des commandes d'achat.");
+                });
+        }
+
+        // Fonction pour charger les détails de la commande sélectionnée via Ajax
+        function chargerDetailsCommande() {
+            const achatSelect = document.getElementById("achatSelect");
+            const achatId = achatSelect.value;
+            if (!achatId) return;
+            // Appel Ajax pour récupérer les détails de la commande (endpoint /reception/commande/<achat_id>)
+            fetch(`/reception/commande/${achatId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("detailsCommande").innerHTML = html;
+                    // Afficher le formulaire de confirmation
+                    document.getElementById("confirmationForm").style.display = "block";
+                    // Stocker l'ID de la commande dans un input caché
+                    document.getElementById("confirmationAchatId").value = achatId;
+                })
+                .catch(error => {
+                    console.error("Erreur lors du chargement des détails :", error);
+                    alert("Erreur lors du chargement des détails de la commande.");
+                });
+        }
+
+        // Fonction pour confirmer la réception via Ajax
+        function confirmerReception(event) {
+            event.preventDefault();
+            const form = document.getElementById("confirmationForm");
+            const formData = new FormData(form);
+            fetch("/reception/confirmer", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                // Optionnel : réinitialiser le formulaire ou recharger la page
+            })
+            .catch(error => {
+                console.error("Erreur lors de la confirmation :", error);
+                alert("Erreur lors de la confirmation de la réception.");
+            });
+        }
+    </script>
 
 </body>
 </html>
-
