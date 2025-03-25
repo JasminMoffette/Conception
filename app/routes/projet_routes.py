@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.models.projet import Projet
 from app import db
 from datetime import datetime
@@ -13,7 +13,9 @@ def projet():
     """
     Affiche la page principale du module projet.
     """
-    return render_template("projet.html")
+    projets_actifs = Projet.query.all()
+    return render_template("projet.html", projets_actifs= projets_actifs)
+
 
 # ====================================================
 # Route pour créer un nouveau projet
@@ -119,3 +121,50 @@ def finaliser_data():
     projets = Projet.query.filter_by(statut="en cours").all()
     return render_template("finalisation_projet.html", projets=projets)
 
+
+# ====================================================
+# Route pour récupérer les informations du projet à modifier
+# ====================================================
+@projet_bp.route('/charger_projet', methods=['GET', 'POST'])
+def charger_projet():
+    projets_actifs = Projet.query.all()
+    projet_selectionne = None
+
+    if request.method == 'POST':
+        projet_id = request.form.get('modif_projet_id')
+        if projet_id:
+            projet_selectionne = Projet.query.get(int(projet_id))
+
+    return render_template('projet.html',
+                           projets_actifs=projets_actifs,
+                           projet_selectionne=projet_selectionne)
+
+# ====================================================
+# Route pour enregistrer les modifications
+# ====================================================
+@projet_bp.route('/enregistrer_modifications/<int:projet_id>', methods=['POST'])
+def enregistrer_modifications(projet_id):
+    projet = Projet.query.get_or_404(projet_id)
+
+    # Récupère les données du formulaire
+    nouveau_code = request.form.get('nouveauCode')
+    nouveau_nom = request.form.get('nouveauNom')
+    nouvelle_date = request.form.get('nouvelleDate')
+    nouveau_responsable = request.form.get('nouveauResponsable')
+    nouveau_statut = request.form.get('nouveauStatut')
+
+    # Met à jour les attributs du projet
+    projet.code = nouveau_code
+    projet.nom = nouveau_nom
+    projet.responsable = nouveau_responsable
+    projet.statut = nouveau_statut
+    date_str = request.form.get('nouvelleDate')
+    projet.date_creation = datetime.strptime(date_str, '%Y-%m-%d').date()
+    try:
+        db.session.commit()
+        flash('✅ Projet mis à jour avec succès.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Erreur lors de la mise à jour : {str(e)}', 'danger')
+
+    return redirect(url_for('projet.charger_projet'))

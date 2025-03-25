@@ -113,13 +113,14 @@
                     <option value="{{ projet.id }}">{{ projet.code }} - {{ projet.nom }}</option>
                 {% endfor %}
             </select>
+            <button type="button" onclick="chargerCommandes()">Charger les commandes</button>
             <!-- Sélection de la commande d'achat (PO) -->
             <label for="achatSelect">Commande d'achat (PO) :</label>
             <select id="achatSelect" name="achat_id" required>
                 <option value="">-- Sélectionnez une commande --</option>
                 <!-- Ce dropdown sera rempli via JavaScript en fonction du projet sélectionné -->
             </select>
-            <button type="button" onclick="chargerCommandes()">Charger les commandes</button>
+
         </form>
 
         <!-- Zone d'affichage des détails de la commande -->
