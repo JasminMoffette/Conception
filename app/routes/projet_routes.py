@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.models.projet import Projet
 from app import db
 from datetime import datetime
@@ -13,8 +13,11 @@ def projet():
     """
     Affiche la page principale du module projet.
     """
+    if "user_type" not in session or session["user_type"] != "gestionnaire":
+        return "⛔ Accès refusé. Réservé au gestionnaire.", 403
+
     projets_actifs = Projet.query.all()
-    return render_template("projet.html", projets_actifs= projets_actifs)
+    return render_template("projet.html", projets_actifs=projets_actifs)
 
 
 # ====================================================

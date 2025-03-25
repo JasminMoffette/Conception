@@ -2,11 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta viewport pour une bonne adaptabilité sur mobiles -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Stocks - Polybois</title>
     <style>
-        /* Styles globaux */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -14,8 +12,7 @@
             background-color: #f4f4f4;
             text-align: center;
         }
-        
-        /* En-tête */
+
         header {
             background-color: #333;
             color: white;
@@ -28,10 +25,9 @@
 
         header img {
             margin-right: 15px;
-            height: 120px; 
+            height: 120px;
         }
 
-        /* Barre de navigation */
         nav {
             background-color: #555;
             padding: 10px;
@@ -59,12 +55,10 @@
             text-decoration: underline;
         }
 
-        /* Contenu principal */
         main {
             padding: 20px;
         }
 
-        /* Tableau de bord et cartes */
         .dashboard {
             display: flex;
             justify-content: center;
@@ -92,19 +86,40 @@
             font-size: 18px;
             color: #777;
         }
+
+        /* Flash message styling */
+        .flash {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 6px solid #28a745;
+        }
+
+        .flash.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 6px solid #dc3545;
+        }
     </style>
 </head>
 <body>
 
-    <!-- En-tête -->
     <header>
         <img src="{{ url_for('static', filename='images/poly.png') }}" alt="Logo Polybois" width="150">
         <h1>Gestion des Stocks - Polybois</h1>
     </header>
     
-    <!-- Navigation principale -->
     <nav>
         <ul>
+            <li><a href="{{ url_for('main.login') }}">Connexion</a></li>
             <li><a href="{{ url_for('projet.projet') }}">Projet</a></li>
             <li><a href="{{ url_for('inventaire.inventaire') }}">Inventaire</a></li>
             <li><a href="{{ url_for('achat.achat') }}">Achat</a></li>
@@ -115,13 +130,26 @@
         </ul>
     </nav>
 
-    <!-- Contenu principal : Tableau de bord -->
     <main>
+
+        <!-- Zone FLASH dynamique -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <h1>📊 Tableau de bord</h1>
-        <p>Bienvenue sur le système de gestion des stocks de Polybois. Consultez les informations en temps réel.</p>
+        <p>
+            Bienvenue {% if session.get('username') %}
+            <span style="color: green; font-weight: bold;">{{ session.get('username') }}</span>
+            {% endif %} sur le système de gestion des stocks de Polybois.
+            Consultez les informations en temps réel.
+        </p>
 
         <div class="dashboard">
-            <!-- Carte exemple pour "Inventaire Faible" -->
             <div class="card">
                 <h2>⚠️ Inventaire Faible</h2>
             </div>

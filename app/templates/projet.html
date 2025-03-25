@@ -117,7 +117,7 @@
   
   
 
-    <div id="formModif">
+    <div id="formModif" class="{% if not projet_selectionne %}hidden{% endif %}">
       <h3>🏗️ Modification de projet</h3>
     
       <form method="POST" action="{{ url_for('projet.charger_projet') }}">

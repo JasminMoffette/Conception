@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, jsonify, current_app
-
+from flask import Blueprint, render_template,  request, redirect, url_for, session,flash
+from app.models.utilisateur import Utilisateur
 main_bp = Blueprint("main", __name__)
 
 # ====================================================
@@ -43,3 +43,35 @@ def creer_routes_dynamiques(blueprint):
 
 # Ajout des routes dynamiques au blueprint main_bp
 creer_routes_dynamiques(main_bp)
+
+# ====================================================
+# Routes pour les logins
+# ====================================================
+@main_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        user = Utilisateur.query.filter_by(nom=username).first()
+
+        if user and user.mot_de_passe == password: 
+            session["user_type"] = user.poste
+            session["username"] = user.nom
+            flash(f"Connexion à {user.nom} - {user.poste}", "success")
+            return redirect(url_for("main.index"))
+        else:
+            flash("Identifiant ou mot de passe incorrect", "danger")
+            return render_template("login.html")
+
+    return render_template("login.html")
+
+#=================================================
+#Route pour les logouts
+#=================================================
+@main_bp.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_type', None)
+    session.pop('username', None)
+    flash("Déconnexion réussie.", "success")
+    return redirect(url_for('main.index'))
