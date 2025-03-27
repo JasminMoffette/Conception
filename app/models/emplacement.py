@@ -10,6 +10,7 @@ class Emplacement(db.Model):
     # Relation avec Stock, qui permet de suivre les produits stockés dans cet emplacement
     stocks = db.relationship("Stock", back_populates="emplacement", cascade="all, delete-orphan")
 
+
     def __init__(self, entrepot, cellule, **kwargs):
         self.entrepot = entrepot
         self.cellule = cellule

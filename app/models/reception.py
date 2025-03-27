@@ -36,50 +36,60 @@ class Reception(db.Model):
         db.session.commit()
         print(f"🗑️ Réception {self.id} supprimée avec succès.")
 
-    def confirmer_reception(self):
+    def confirmer_reception(self, emplacements_produits):
         """
-        Confirme la réception en mettant à jour le stock global de chaque produit ainsi que
-        la quantité reçue dans l'association ProduitProjet liée au projet de l'achat.
-        Détermine l'état de la réception en fonction des quantités reçues par rapport aux quantités commandées.
+        Confirme la réception en mettant à jour :
+        - le stock global de chaque produit
+        - la quantité reçue dans ProduitProjet
+        - l'attribution des emplacements via la classe Stock
+
+        emplacements_produits: dict {produit_id: emplacement_id}
         """
-        # On récupère le projet lié à cet achat via la relation Achat (supposée définie dans le modèle Achat)
-        achat_instance = self.achat  # On suppose que la relation backref 'achat' existe dans le modèle Achat
+        achat_instance = self.achat
         if not achat_instance:
             print("⚠️ Achat associé introuvable.")
             return
 
         projet_id = achat_instance.projet_id
-
-        # Initialiser un indicateur pour savoir si la réception est complète
         reception_complete = True
 
-        # Pour chaque ligne de réception, mettre à jour le stock du produit et l'association dans ProduitProjet
         for ligne in self.lignes_reception:
-            produit = ligne.produit  # On suppose que la relation "produit" est bien définie dans LigneReception
+            produit = ligne.produit
             if produit:
-                # Mettre à jour le stock global du produit
                 produit.quantite += ligne.quantite_recue
-                # Mettre à jour l'association ProduitProjet si le projet est défini
+
+                # Mise à jour ProduitProjet (comme actuellement)
                 if projet_id:
                     from app.models.associations import ProduitProjet
                     association = ProduitProjet.query.filter_by(produit_id=produit.id, projet_id=projet_id).first()
                     if association:
-                        # Nous supposons ici que l'association doit enregistrer la quantité reçue.
-                        # Il faut ajouter un nouvel attribut 'quantite_recue' dans la classe ProduitProjet pour cela.
                         if hasattr(association, 'quantite_recue'):
                             association.quantite_recue += ligne.quantite_recue
                         else:
-                            # Si l'attribut n'existe pas, on peut l'initialiser (mais idéalement, il faudrait le définir dans le modèle)
                             association.quantite_recue = ligne.quantite_recue
-                    else:
-                        print(f"⚠️ Aucune association trouvée pour produit_id {produit.id} et projet_id {projet_id}.")
-                # Optionnel : si la quantité reçue est inférieure à la quantité commandée (que l'on peut récupérer depuis LigneAchat ou Achat),
-                # on considère la réception comme partielle.
-                # Par exemple, si ligne.quantite_recue < quantité attendue, on passe reception_complete à False.
-                # Ici, on suppose que la logique de comparaison est définie ailleurs.
+
+                # Nouvelle étape : enregistrer dans Stock avec emplacement choisi
+                emplacement_id = emplacements_produits.get(produit.id)
+                if emplacement_id:
+                    from app.models.associations import Stock
+                    stock = Stock(
+                        produit_id=produit.id,
+                        emplacement_id=emplacement_id,
+                        quantite=ligne.quantite_recue,
+                        achat_id=self.achat_id  # ici, l'achat_id est très utile
+                    )
+                    db.session.add(stock)
+                else:
+                    print(f"⚠️ Aucun emplacement attribué pour produit {produit.code}.")
+                    reception_complete = False
             else:
                 print(f"⚠️ Produit avec id {ligne.produit_id} non trouvé.")
                 reception_complete = False
+
+        self.etat = "complete" if reception_complete else "partielle"
+        db.session.commit()
+        print(f"✅ Réception {self.id} confirmée : stocks et associations mis à jour. État: {self.etat}")
+
 
         # Déterminer l'état de la réception
         self.etat = "complete" if reception_complete else "partielle"

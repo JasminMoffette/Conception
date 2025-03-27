@@ -7,6 +7,8 @@ main_bp = Blueprint("main", __name__)
 # ====================================================
 @main_bp.route("/")
 def index():
+    if "user_type" not in session or session["user_type"] != "gestionnaire":
+        return render_template("login.html")
     """Affiche la page d'accueil."""
     return render_template("index.html")
 
@@ -14,7 +16,7 @@ def index():
 # Route pour afficher le plan de l'usine
 # ====================================================
 @main_bp.route("/plan")
-def plan():
+def plan():        
     """Affiche la page du plan de l'usine."""
     return render_template("plan.html")
 
@@ -74,4 +76,4 @@ def logout():
     session.pop('user_type', None)
     session.pop('username', None)
     flash("Déconnexion réussie.", "success")
-    return redirect(url_for('main.index'))
+    return render_template("login.html")

@@ -95,19 +95,25 @@ class LigneReception(db.Model):
 # ====================================================
 class Stock(db.Model):
     __tablename__ = 'stock'
+    
     id = db.Column(db.Integer, primary_key=True)
     quantite = db.Column(db.Integer, default=0)
     produit_id = db.Column(db.Integer, db.ForeignKey('produit.id'), nullable=False)
     emplacement_id = db.Column(db.Integer, db.ForeignKey('emplacement.id'), nullable=False)
+    achat_id = db.Column(db.Integer, db.ForeignKey('achat.id'), nullable=True)  # ⚠️ ici au bon endroit
 
     # Relations bidirectionnelles
     produit = db.relationship("Produit", back_populates="stocks")
     emplacement = db.relationship("Emplacement", back_populates="stocks")
+    achat = db.relationship("Achat")
 
-    def __init__(self, produit_id, emplacement_id, quantite):
+    def __init__(self, produit_id, emplacement_id, quantite, achat_id=None):
         self.produit_id = produit_id
         self.emplacement_id = emplacement_id
         self.quantite = quantite
+        self.achat_id = achat_id
 
     def __repr__(self):
-        return f"<Stock produit_id={self.produit_id}, emplacement_id={self.emplacement_id}, quantite={self.quantite}>"
+        return f"<Stock produit_id={self.produit_id}, emplacement_id={self.emplacement_id}, quantite={self.quantite}, achat_id={self.achat_id}>"
+
+    

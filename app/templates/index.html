@@ -119,7 +119,7 @@
     
     <nav>
         <ul>
-            <li><a href="{{ url_for('main.login') }}">Connexion</a></li>
+            <li><a href="{{ url_for('main.login') }}">Déconnexion</a></li>
             <li><a href="{{ url_for('projet.projet') }}">Projet</a></li>
             <li><a href="{{ url_for('inventaire.inventaire') }}">Inventaire</a></li>
             <li><a href="{{ url_for('achat.achat') }}">Achat</a></li>
@@ -132,22 +132,16 @@
 
     <main>
 
-        <!-- Zone FLASH dynamique -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash {{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
 
-        <h1>📊 Tableau de bord</h1>
         <p>
             Bienvenue {% if session.get('username') %}
             <span style="color: green; font-weight: bold;">{{ session.get('username') }}</span>
             {% endif %} sur le système de gestion des stocks de Polybois.
             Consultez les informations en temps réel.
         </p>
+
+
+        <h1>📊 Tableau de bord</h1>
 
         <div class="dashboard">
             <div class="card">

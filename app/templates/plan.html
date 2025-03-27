@@ -13,6 +13,7 @@
             border: 2px solid black;
             background-color: white;
             margin-top: 20px;
+            cursor: pointer;
         }
         header {
             background-color: #333;
@@ -45,68 +46,80 @@
 </head>
 <body>
 
-    <header>📍 Plan de l'Entreprise - Polybois</header>
+<header>📍 Plan de l'Entreprise - Polybois</header>
 
-    <nav>
-        <ul>
-            <li><a href="/">🏠 Retour à l'accueil</a></li>
-        </ul>
-    </nav>
+<nav>
+    <ul>
+        <li><a href="/">🏠 Retour à l'accueil</a></li>
+    </ul>
+</nav>
 
-    <canvas id="planCanvas" width="1600" height="800"></canvas>
+<canvas id="planCanvas" width="1600" height="800"></canvas>
 
-    <script>
-        async function loadEmplacements() {
-            const response = await fetch("emplacement/api/emplacements");
-            const data = await response.json();
-    
-            const canvas = document.getElementById("planCanvas");
-            const ctx = canvas.getContext("2d");
-    
-            ctx.fillStyle = "blue";
-            ctx.font = "16px Arial";
-    
-            // Afficher les noms des entrepôts avec clic interactif
-            data.emplacements.forEach(emp => {
-                const x = emp["Position X"];
-                const y = 800 - emp["Position Y"];
-                const DECALAGE_X = -50;
-                const DECALAGE_Y = 5;
-    
-                ctx.fillText(emp["Value"], x + DECALAGE_X, y + DECALAGE_Y);
-    
-                // Rendre le texte interactif
-                canvas.addEventListener("click", function(event) {
-                    const rect = canvas.getBoundingClientRect();
-                    const clickX = event.clientX - rect.left;
-                    const clickY = event.clientY - rect.top;
-    
-                    // Vérifier si le clic est proche du texte
-                    if (Math.abs(clickX - (x + DECALAGE_X)) < 30 && Math.abs(clickY - (y + DECALAGE_Y)) < 15) {
-                        window.location.href = "/entrepot/" + encodeURIComponent(emp["Value"]);
+<script>
+    async function loadEmplacements() {
+        const response = await fetch("/emplacement/api/emplacements");
+        const data = await response.json();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const produit_id = urlParams.get('produit_id');
+        const achat_id = urlParams.get('achat_id');
+        const mode = urlParams.get('mode') || 'reception'; // réception par défaut
+
+        const canvas = document.getElementById("planCanvas");
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "blue";
+        ctx.font = "16px Arial";
+
+        data.emplacements.forEach(emp => {
+            const x = emp["Position X"];
+            const y = 800 - emp["Position Y"];
+            const DECALAGE_X = -50;
+            const DECALAGE_Y = 5;
+
+            ctx.fillText(emp["Value"], x + DECALAGE_X, y + DECALAGE_Y);
+
+            // ATTENTION : ajouter un seul listener global pour éviter la répétition
+            canvas.addEventListener("click", function(event) {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const clickY = event.clientY - rect.top;
+
+                if (Math.abs(clickX - (x + DECALAGE_X)) < 30 && Math.abs(clickY - (y + DECALAGE_Y)) < 15) {
+                    const entrepot = encodeURIComponent(emp["Value"]);
+
+                    // Redirection selon le mode
+                    if (mode === "inventaire") {
+                        window.location.href = `/entrepot/${entrepot}?mode=inventaire`;
+                    } else {
+                        let targetURL = `/entrepot/${entrepot}`;
+                        if (produit_id && achat_id) {
+                            targetURL += `?produit_id=${produit_id}&achat_id=${achat_id}`;
+                        }
+                        window.location.href = targetURL;
                     }
-                });
+                }
             });
-    
-            // Dessiner les murs
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 3;
-            data.murs.forEach(mur => {
-                const x1 = mur["Start X"];
-                const y1 = 800 - mur["Start Y"];
-                const x2 = mur["End X"];
-                const y2 = 800 - mur["End Y"];
-    
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            });
-        }
-    
-        loadEmplacements();
-    </script>
-    
+        });
+
+        // Dessin des murs
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        data.murs.forEach(mur => {
+            const x1 = mur["Start X"];
+            const y1 = 800 - mur["Start Y"];
+            const x2 = mur["End X"];
+            const y2 = 800 - mur["End Y"];
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        });
+    }
+
+    loadEmplacements();
+</script>
 
 </body>
 </html>

@@ -28,7 +28,7 @@ def register_blueprints(app):
     # Routes d'emplacement
     app.register_blueprint(emplacement_bp, url_prefix="/emplacement")
     # Routes d'entrepôt
-    app.register_blueprint(entrepot_bp)
+    app.register_blueprint(entrepot_bp, url_prefix="/entrepot")
     # Routes de projet
     app.register_blueprint(projet_bp, url_prefix="/projet")
 

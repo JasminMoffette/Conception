@@ -1,116 +1,104 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, current_app
 from app.models.produit import Produit
 from app.models.projet import Projet  
+from app.models.emplacement import Emplacement
+from app.models.associations import ProduitProjet, Stock
 from app import db
 
 inventaire_bp = Blueprint('inventaire', __name__)
 
 # ====================================================
-# Route d'affichage de la page principale d'inventaire
+# Route d'accueil du module Inventaire
 # ====================================================
 @inventaire_bp.route("/")
 def inventaire():
-    """
-    Affiche la page d'accueil de l'inventaire.
-    """
     return render_template("inventaire.html")
 
 # ====================================================
-# Route d'affichage des projets actifs pour l'inventaire par projet
-# ====================================================
-@inventaire_bp.route("/inventaire_projet")
-def inventaire_projet():
-    """
-    Affiche la page de sélection des projets actifs pour l'inventaire.
-    Ici, on filtre les projets dont le statut est "en cours".
-    """
-    projets_actifs = Projet.query.filter_by(statut="en cours").all()
-    return render_template("inventaire_projet.html", projets=projets_actifs)
-
-# ====================================================
-# Route d'affichage de l'inventaire général (tous les produits)
+# Inventaire général : tous les produits
 # ====================================================
 @inventaire_bp.route("/general")
 def inventaire_general():
-    """
-    Affiche l'inventaire général regroupant tous les produits.
-    """
     produits = Produit.query.all()
     return render_template("inventaire_general.html", produits=produits)
 
 # ====================================================
-# Route d'affichage de l'inventaire des produits libres
+# Inventaire des produits libres (non attribués à un projet)
 # ====================================================
 @inventaire_bp.route("/libre")
 def inventaire_libre():
-    """
-    Affiche l'inventaire des produits disposant d'une quantité libre.
-    La quantité libre est calculée comme la différence entre la quantité en stock 
-    et la quantité déjà attribuée à des projets.
-    """
     produits = Produit.query.all()
     produits_libres = []
     for produit in produits:
-        # Calcul de la quantité déjà attribuée via les associations avec les projets
         total_attribue = sum(assoc.quantite for assoc in produit.projets_associes)
         free = produit.quantite - total_attribue
         if free > 0:
-            # Ajout d'un attribut 'free' à l'objet produit pour le rendu
             produit.free = free
             produits_libres.append(produit)
     return render_template("inventaire_libre.html", produits=produits_libres)
 
 # ====================================================
-# Route pour afficher la page d'inventaire par entrepôt
+# Inventaire par projet (sélection d'un projet)
 # ====================================================
-@inventaire_bp.route("/inventaire_entrepot")
-def inventaire_entrepot():
-    """
-    Affiche la page dédiée à l'inventaire par entrepôt.
-    """
-    return render_template("inventaire_entrepot.html")
+@inventaire_bp.route("/inventaire_projet")
+def inventaire_projet():
+    projets_actifs = Projet.query.filter_by(statut="en cours").all()
+    return render_template("inventaire_projet.html", projets=projets_actifs)
 
 # ====================================================
-# Route pour attribuer un produit à un projet
+# Inventaire détaillé d'un projet sélectionné
+# ====================================================
+@inventaire_bp.route("/projet_liste")
+def projet_liste():
+    projet_code = request.args.get("projet")
+    if not projet_code:
+        return "Aucun projet sélectionné.", 400
+
+    projet = Projet.query.filter_by(code=projet_code).first()
+    if not projet:
+        return f"Projet '{projet_code}' non trouvé.", 404
+
+    associations = ProduitProjet.query.filter_by(projet_id=projet.id).all()
+
+    inventaire = []
+    for assoc in associations:
+        produit = Produit.query.get(assoc.produit_id)
+        if produit:
+            inventaire.append({
+                "code": produit.code,
+                "description": produit.description,
+                "materiaux": produit.materiaux,
+                "quantite": assoc.quantite
+            })
+
+    return render_template("inventaire_projet_liste.html", inventaire=inventaire, projet=projet)
+
+# ====================================================
+# Attribution d'un produit à un projet (via POST JSON)
 # ====================================================
 @inventaire_bp.route("/attribuer_projet", methods=["POST"])
 def attribuer_projet():
-    """
-    Attribue un produit à un projet en créant ou en mettant à jour une association.
-    Les données sont envoyées au format JSON et doivent contenir :
-      - code : le code du produit
-      - projet : le code du projet
-      - quantite : la quantité à attribuer
-    """
     data = request.json
     code = data.get("code")
     projet_code = data.get("projet")
     quantite = data.get("quantite")
 
-    # Validation des données reçues
     if not code or not projet_code or not quantite:
         return jsonify({"message": "❌ Données manquantes ou invalides."}), 400
 
-    # Récupération du produit
     produit = Produit.query.filter_by(code=code).first()
     if not produit:
         return jsonify({"message": "❌ Produit non trouvé."}), 404
 
-    # Vérification de la disponibilité du stock
     if produit.quantite < quantite:
         return jsonify({"message": "❌ Quantité insuffisante."}), 400
 
-    # Récupération ou création du projet en fonction du code
     projet = Projet.query.filter_by(code=projet_code).first()
     if not projet:
         projet = Projet(code=projet_code)
         db.session.add(projet)
         db.session.commit()
 
-    # Import local du modèle d'association
-    from app.models.associations import ProduitProjet
-
-    # Recherche d'une association existante
     association = ProduitProjet.query.filter_by(produit_id=produit.id, projet_id=projet.id).first()
     if association:
         association.quantite += quantite
@@ -126,56 +114,61 @@ def attribuer_projet():
         return jsonify({"message": f"❌ Erreur lors de l'attribution : {e}"}), 500
 
 # ====================================================
-# Route pour afficher l'inventaire détaillé d'un projet
+# Page d'inventaire par entrepôt (choix visuel)
 # ====================================================
-@inventaire_bp.route("/projet_liste")
-def projet_liste():
-    """
-    Affiche l'inventaire détaillé d'un projet donné.
-    Le code du projet est passé en paramètre GET.
-    """
-    projet_code = request.args.get("projet")
-    if not projet_code:
-        return "Aucun projet sélectionné.", 400
+@inventaire_bp.route("/inventaire_entrepot")
+def inventaire_entrepot():
+    return render_template("inventaire_entrepot.html")
 
-    from app.models.projet import Projet
-    from app.models.associations import ProduitProjet
-    from app.models.produit import Produit
+# ====================================================
+# Détail d'un entrepôt avec plan visuel (inventaire)
+# ====================================================
+@inventaire_bp.route("/entrepot/<nom>")
+def inventaire_entrepot_vue(nom):
+    df_excel = current_app.config.get("df_excel")
+    feuille = nom.lower().replace(" ", "_")
 
-    # Récupérer le projet
-    projet = Projet.query.filter_by(code=projet_code).first()
-    if not projet:
-        return f"Projet '{projet_code}' non trouvé.", 404
+    if df_excel is None or feuille not in df_excel:
+        return "Plan introuvable pour cet entrepôt.", 404
 
-    # Récupérer les associations pour ce projet
-    associations = ProduitProjet.query.filter_by(projet_id=projet.id).all()
+    df = df_excel[feuille]
+    elements = df.dropna(subset=["Value", "Position X", "Position Y"])[["Value", "Position X", "Position Y"]].to_dict(orient="records")
+    murs = df.dropna(subset=["Start X", "Start Y", "End X", "End Y"])[["Start X", "Start Y", "End X", "End Y"]].to_dict(orient="records")
 
-    # Préparer les données d'inventaire pour le rendu
-    inventaire = []
-    for assoc in associations:
-        produit = Produit.query.get(assoc.produit_id)
-        if produit:
-            inventaire.append({
-                "code": produit.code,
-                "description": produit.description,
-                "materiaux": produit.materiaux,
-                "quantite": assoc.quantite
-            })
+    for el in elements:
+        emplacement = Emplacement.query.filter_by(entrepot=nom, cellule=el["Value"]).first()
+        el["occupee"] = emplacement and Stock.query.filter(Stock.emplacement_id == emplacement.id, Stock.quantite > 0).first() is not None
+        el["id"] = emplacement.id if emplacement else -1
 
-    return render_template("inventaire_projet_liste.html", inventaire=inventaire, projet=projet)
+    return render_template("inventaire_entrepot.html", entrepot=nom, elements=elements, murs=murs)
 
+# ====================================================
+# API pour récupérer les stocks d'une cellule (emplacement)
+# ====================================================
+@inventaire_bp.route("/api/cellule/<int:emplacement_id>")
+def api_details_cellule(emplacement_id):
+    stocks = Stock.query.filter_by(emplacement_id=emplacement_id).all()
+    resultat = []
+    for stock in stocks:
+        produit = stock.produit
+        achat = stock.achat
+        projet_nom = achat.projet.nom if achat and achat.projet else "N/A"
+        commande_po = achat.po if achat else "N/A"
 
+        resultat.append({
+            "produit_code": produit.code,
+            "description": produit.description,
+            "quantite": stock.quantite,
+            "commande_po": commande_po,
+            "projet_nom": projet_nom
+        })
 
+    return jsonify(resultat)
+    
 @inventaire_bp.route("/entrepot_detail")
 def inventaire_entrepot_detail():
-     entrepot = request.args.get("entrepot")
-     if not entrepot:
-         return "Aucun entrepôt sélectionné.", 400
- 
-     # Récupérer les produits pour cet entrepôt (selon votre logique)
-     # Ici, on suppose que l'emplacement du produit est enregistré dans un attribut stock.cellule
-     # et que vous avez une relation entre Produit et Stock.
-     produits = Produit.query.filter(Produit.stocks.any(Stock.entrepot == entrepot)).all()
-     
-     return render_template("inventaire_entrepot_detail.html", produits=produits, entrepot=entrepot)
+    entrepot = request.args.get("entrepot")
+    if not entrepot:
+        return "Aucun entrepôt sélectionné.", 400
 
+    return redirect(f"/entrepot/{entrepot}?mode=inventaire")

@@ -5,7 +5,6 @@
     <title>Détails de la commande d'achat - Réception</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* Styles pour la table et le formulaire */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -20,7 +19,7 @@
             border-collapse: collapse;
             background: white;
             margin: 20px auto;
-            max-width: 800px;
+            max-width: 900px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -49,11 +48,13 @@
         button:hover {
             background-color: #45a049;
         }
-        #message {
-            text-align: center;
-            font-size: 18px;
-            margin-top: 20px;
-            color: green;
+        .attribuer-emplacement {
+            color: #2196F3;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .attribuer-emplacement:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -61,9 +62,7 @@
 
     <h2>Détails de la commande d'achat : {{ achat.po }}</h2>
 
-    <!-- Formulaire de confirmation de réception -->
     <form id="confirmationForm" method="POST" action="{{ url_for('reception.confirmer_reception') }}">
-        <!-- Champ caché pour l'ID de la commande d'achat -->
         <input type="hidden" name="achat_id" value="{{ achat.id }}">
         
         <table>
@@ -74,6 +73,7 @@
                     <th>Quantité commandée</th>
                     <th>Quantité déjà reçue</th>
                     <th>Quantité à recevoir</th>
+                    <th>Emplacement</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,17 +84,39 @@
                     <td>{{ detail.quantite_commandee }}</td>
                     <td>{{ detail.quantite_recue }}</td>
                     <td>
-                        <!-- L'input porte le nom "qte_<produit_id>" -->
-                        <input type="number" name="qte_{{ detail.produit_id }}" min="0" max="{{ detail.quantite_manquante }}"
-                               value="{{ detail.quantite_manquante }}">
+                        <input type="number" name="qte_{{ detail.produit_id }}" min="0" max="{{ detail.quantite_manquante }}" value="{{ detail.quantite_manquante }}">
+                    </td>
+                    <td>
+                        <a href="/plan?produit_id={{ detail.produit_id }}&achat_id={{ achat.id }}" class="attribuer-emplacement">Attribuer Emplacement</a>
+                        <div id="emplacement-{{ detail.produit_id }}"></div>
+                        <input type="hidden" name="emplacement_{{ detail.produit_id }}" id="input-emplacement-{{ detail.produit_id }}">
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
         <button type="submit">Confirmer la réception</button>
     </form>
 
+    <!-- @ts-ignore -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for detail in details %}
+                // @ts-ignore
+                const storedEmplacement = sessionStorage.getItem('emplacement_produit_{{ detail.produit_id }}');
+                if(storedEmplacement) {
+                    const data = JSON.parse(storedEmplacement);
+                    // @ts-ignore
+                    document.getElementById('emplacement-{{ detail.produit_id }}').innerText = data.entrepot + ' - ' + data.cellule;
+                    // @ts-ignore
+                    document.getElementById('input-emplacement-{{ detail.produit_id }}').value = data.entrepot + ';' + data.cellule;
+                    sessionStorage.removeItem('emplacement_produit_{{ detail.produit_id }}');
+                }
+            {% endfor %}
+        });
+        </script>
+    
+
 </body>
 </html>
-

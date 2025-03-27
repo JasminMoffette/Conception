@@ -14,7 +14,7 @@ def projet():
     Affiche la page principale du module projet.
     """
     if "user_type" not in session or session["user_type"] != "gestionnaire":
-        return "⛔ Accès refusé. Réservé au gestionnaire.", 403
+        return "Acces refusé"
 
     projets_actifs = Projet.query.all()
     return render_template("projet.html", projets_actifs=projets_actifs)

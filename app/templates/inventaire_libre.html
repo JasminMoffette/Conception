@@ -1,156 +1,133 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Inventaire Libre - Polybois</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: white;
-      padding: 10px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 100px; /* Ajuste la hauteur */
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .return-link {
-      text-decoration: none;
-      font-size: 18px;
-      color: white;
-      background-color: #333;
-      padding: 8px 12px;
-      border-radius: 5px;
-    }
-    .return-link:hover {
-      background-color: #555;
-    }
-    .module-title {
-      font-size: 24px;
-      color: #333;
-      flex-grow: 1; 
-      text-align: center;
-    }
-    .logo-polybois {
-      height: 120px;
-    }
-    .container {
-      margin: 20px auto;
-      width: 80%;
-      background: white;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Plan de l'Entreprise - Polybois</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        canvas {
+            border: 2px solid black;
+            background-color: white;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            font-size: 24px;
+        }
+        nav {
+            background-color: #555;
+            padding: 10px;
+            text-align: center;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <a class="return-link" href="/inventaire">⬅️ Retour</a>
-    <h1 class="module-title">Inventaire Libre</h1>
-    <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
-  </header>
+<header>📍 Plan de l'Entreprise - Polybois</header>
 
-  <div class="container">
-    <h2>Liste des produits en stock libre</h2>
-    <table id="produits">
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Description</th>
-          <th>Matériaux</th>
-          <th>Quantité Totale</th>
-          <th>Quantité Libre</th>
-          <th>Emplacement</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% if produits %}
-          {% for produit in produits %}
-            <tr>
-              <td>{{ produit.code }}</td>
-              <td>{{ produit.description }}</td>
-              <td>{{ produit.materiaux }}</td>
-              <td>{{ produit.quantite }}</td>
-              <td>{{ produit.free }}</td>
-              <td>{{ produit.emplacement }}</td>
-              <td>
-                <button onclick="attribuer_projet('{{ produit.code }}')">Attribuer projet</button>
-              </td>
-            </tr>
-          {% endfor %}
-        {% else %}
-          <tr><td colspan="7">⚠️ Aucun produit libre trouvé.</td></tr>
-        {% endif %}
-      </tbody>
-    </table>
-  </div>
+<nav>
+    <ul>
+        <li><a href="/">🏠 Retour à l'accueil</a></li>
+    </ul>
+</nav>
 
-  <script>
-    // Fonction de filtrage si nécessaire
-    function filterProduits() {
-      let searchValue = document.getElementById("search").value.toLowerCase();
-      let rows = document.querySelectorAll("#produits tbody tr");
-      let found = false;
-      rows.forEach(row => {
-        let code = row.cells[0].textContent.toLowerCase();
-        let description = row.cells[1].textContent.toLowerCase();
-        let emplacement = row.cells[4].textContent.toLowerCase();
-        if (code.includes(searchValue) || description.includes(searchValue) || emplacement.includes(searchValue)) {
-          row.style.display = "";
-          found = true;
-        } else {
-          row.style.display = "none";
-        }
-      });
-      document.getElementById("noProducts").style.display = found ? "none" : "block";
+<canvas id="planCanvas" width="1600" height="800"></canvas>
+
+<script>
+    async function loadEmplacements() {
+        const response = await fetch("/emplacement/api/emplacements");
+        const data = await response.json();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const produit_id = urlParams.get('produit_id');
+        const achat_id = urlParams.get('achat_id');
+        const mode = urlParams.get('mode') || 'reception';
+
+        const canvas = document.getElementById("planCanvas");
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "blue";
+        ctx.font = "16px Arial";
+
+        const cellules = [];
+
+        data.emplacements.forEach(emp => {
+            const x = emp["Position X"];
+            const y = 800 - emp["Position Y"];
+            const labelX = x - 50;
+            const labelY = y + 5;
+
+            ctx.fillText(emp["Value"], labelX, labelY);
+
+            cellules.push({
+                x: labelX,
+                y: labelY,
+                value: emp["Value"]
+            });
+        });
+
+        canvas.addEventListener("click", function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            for (let cell of cellules) {
+                if (Math.abs(clickX - cell.x) < 30 && Math.abs(clickY - cell.y) < 15) {
+                    const entrepot = encodeURIComponent(cell.value);
+                    if (mode === "inventaire") {
+                        window.location.href = `/entrepot/${entrepot}?mode=inventaire`;
+                    } else {
+                        let targetURL = `/entrepot/${entrepot}`;
+                        if (produit_id && achat_id) {
+                            targetURL += `?produit_id=${produit_id}&achat_id=${achat_id}`;
+                        }
+                        window.location.href = targetURL;
+                    }
+                    break;
+                }
+            }
+        });
+
+        // Murs
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        data.murs.forEach(mur => {
+            const x1 = mur["Start X"];
+            const y1 = 800 - mur["Start Y"];
+            const x2 = mur["End X"];
+            const y2 = 800 - mur["End Y"];
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        });
     }
 
-    // Fonction pour attribuer un produit à un projet
-    function attribuer_projet(code) {
-      let projet = prompt("Code du projet ?");
-      if (!projet) {
-        alert("Vous devez saisir un code de projet.");
-        return;
-      }
-      let quantite = parseInt(prompt("Quantité à attribuer ?"), 10);
-      if (!quantite || quantite <= 0) {
-        alert("Quantité invalide !");
-        return;
-      }
-      fetch("/inventaire/attribuer_projet", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({code: code, projet: projet, quantite: quantite})
-      })
-      .then(response => response.json())
-      .then(data => {
-        alert(data.message);
-        location.reload(); // Rafraîchit la page pour mettre à jour l'inventaire libre
-      })
-      .catch(error => alert("❌ Erreur : " + error));
-    }
-  </script>
+    loadEmplacements();
+</script>
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session
 from app.models.projet import Projet
 from app.models.achat import Achat
 from app.models.reception import Reception
@@ -13,6 +13,7 @@ reception_bp = Blueprint('reception', __name__)
 # ====================================================
 @reception_bp.route("/", methods=["GET"])
 def reception():
+    
     """
     Affiche la page principale du module Réception.
     L'utilisateur peut y sélectionner un projet parmi ceux en cours.
@@ -70,29 +71,15 @@ def details_commande(achat_id):
 
 @reception_bp.route("/confirmer", methods=["POST"])
 def confirmer_reception():
-    """
-    Confirme la réception pour une commande d'achat.
-    Attend les quantités reçues pour chaque produit (avec des clés du type "qte_<produit_id>").
-    Met à jour le stock global du produit et l'association avec le projet, puis calcule l'état de la réception (complete ou partielle).
-    Retourne une réponse JSON si la requête est AJAX, sinon redirige avec un flash message.
-    """
     achat_id = request.form.get("achat_id")
     if not achat_id:
-        response = {"message": "Commande d'achat non spécifiée."}
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return jsonify(response), 400
-        else:
-            flash(response["message"], "error")
-            return redirect(url_for("reception.reception"))
+        flash("Commande d'achat non spécifiée.", "error")
+        return redirect(url_for("reception.reception"))
 
     achat = Achat.query.get(achat_id)
     if not achat:
-        response = {"message": "Commande d'achat introuvée."}
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return jsonify(response), 404
-        else:
-            flash(response["message"], "error")
-            return redirect(url_for("reception.reception"))
+        flash("Commande d'achat introuvée.", "error")
+        return redirect(url_for("reception.reception"))
 
     reception_obj = Reception.query.filter_by(achat_id=achat.id).first()
     if not reception_obj:
@@ -101,14 +88,21 @@ def confirmer_reception():
         db.session.commit()
 
     erreurs = []
-    from app.models.associations import ProduitProjet
+    from app.models.associations import ProduitProjet, Stock
+    from app.models.emplacement import Emplacement
 
     for ligne in achat.lignes_achat:
         produit = ligne.produit
         input_name = f"qte_{produit.id}"
+        emplacement_name = f"emplacement_{produit.id}"
+
         qte_str = request.form.get(input_name)
-        if qte_str is None:
-            continue  # Aucun changement pour ce produit
+        emplacement_str = request.form.get(emplacement_name)
+
+        if qte_str is None or emplacement_str is None:
+            erreurs.append(f"Quantité ou emplacement manquant pour {produit.code}")
+            continue
+
         try:
             quantite_recue = int(qte_str)
         except ValueError:
@@ -119,7 +113,13 @@ def confirmer_reception():
             erreurs.append(f"Quantité négative pour le produit {produit.code}")
             continue
 
-        # Créer une nouvelle ligne de réception pour ce produit
+        entrepot, cellule = emplacement_str.split(";")
+        emplacement = Emplacement.query.filter_by(entrepot=entrepot, cellule=cellule).first()
+
+        if not emplacement:
+            erreurs.append(f"Emplacement introuvable: {emplacement_str} pour le produit {produit.code}")
+            continue
+
         nouvelle_ligne = LigneReception(
             reception_id=reception_obj.id,
             produit_id=produit.id,
@@ -138,27 +138,28 @@ def confirmer_reception():
             association = ProduitProjet(produit_id=produit.id, projet_id=achat.projet_id, quantite=quantite_recue)
             db.session.add(association)
 
+        # Enregistrement dans la table Stock avec emplacement
+        stock_entry = Stock(
+            produit_id=produit.id,
+            emplacement_id=emplacement.id,
+            quantite=quantite_recue,
+            achat_id=achat.id
+        )
+        db.session.add(stock_entry)
+
     if erreurs:
         db.session.rollback()
-        response = {"message": "Erreur(s) lors de la confirmation: " + ", ".join(erreurs)}
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return jsonify(response), 400
-        else:
-            flash(response["message"], "error")
-            return redirect(url_for("reception.reception"))
+        flash("Erreur(s): " + ", ".join(erreurs), "error")
+        return redirect(url_for("reception.details_commande", achat_id=achat.id))
 
     try:
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        response = {"message": f"Erreur lors de la mise à jour: {e}"}
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return jsonify(response), 500
-        else:
-            flash(response["message"], "error")
-            return redirect(url_for("reception.reception"))
+        flash(f"Erreur lors de la mise à jour: {e}", "error")
+        return redirect(url_for("reception.details_commande", achat_id=achat.id))
 
-    # Calcul de l'état de la réception pour l'achat
+    # Déterminer état de la réception
     etat_reception = "complete"
     for ligne in achat.lignes_achat:
         quantite_recue_total = sum(
@@ -167,12 +168,9 @@ def confirmer_reception():
         if quantite_recue_total < ligne.quantite:
             etat_reception = "partielle"
             break
+
     reception_obj.etat = etat_reception
     db.session.commit()
 
-    response = {"message": f"Réception confirmée ({etat_reception}). Stocks et associations mis à jour."}
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify(response)
-    else:
-        flash(response["message"], "success")
-        return redirect(url_for("reception.reception"))
+    flash(f"Réception confirmée ({etat_reception}). Stocks mis à jour.", "success")
+    return redirect(url_for("reception.reception"))

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, current_app
+from flask import Blueprint, render_template, jsonify, current_app, session
 
 emplacement_bp = Blueprint('emplacement', __name__)
 
@@ -7,8 +7,8 @@ emplacement_bp = Blueprint('emplacement', __name__)
 # ====================================================
 @emplacement_bp.route("/")
 def emplacement():
-    """Affiche la page dédiée aux emplacements."""
-    return render_template("emplacement.html")
+    return render_template("plan.html")
+
 
 # ====================================================
 # API pour récupérer les emplacements et les murs depuis le fichier Excel
@@ -54,3 +54,5 @@ def get_emplacements():
     print(f"✅ Murs récupérés : {len(murs)}")
 
     return jsonify({"emplacements": emplacements, "murs": murs})
+
+

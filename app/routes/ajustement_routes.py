@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.models.produit import Produit
 from app import db
 
@@ -9,6 +9,10 @@ ajustement_bp = Blueprint("ajustement", __name__)
 # ====================================================
 @ajustement_bp.route("/", methods=["GET"])
 def ajustement():
+
+    if "user_type" not in session or session["user_type"] != "gestionnaire":
+        return "Acces refusé"
+
     return render_template("ajustement.html")
 
 # ====================================================

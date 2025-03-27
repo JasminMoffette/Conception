@@ -2,93 +2,126 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inventaire Entrepôt - Polybois</title>
+    <title>Inventaire - {{ entrepot }}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        header {
-            background-color: white;
-            padding: 10px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 100px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .return-link {
-            text-decoration: none;
-            font-size: 18px;
-            color: white;
-            background-color: #333;
-            padding: 8px 12px;
-            border-radius: 5px;
-        }
-        .return-link:hover {
-            background-color: #555;
-        }
-        .module-title {
-            font-size: 24px;
-            color: #333;
-            flex-grow: 1;
-            text-align: center;
-        }
-        .logo-polybois {
-            height: 120px;
-        }
-        /* Conteneur des icônes */
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            margin: 50px auto;
-            width: 80%;
-        }
-        /* Style des "icon-card" sans image */
-        .icon-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-in-out;
-            width: 200px;
-            cursor: pointer;
-            text-decoration: none;
-            color: #333;
-        }
-        .icon-card:hover {
-            transform: scale(1.1);
-            background-color: #f0f0f0;
-        }
-        .icon-card p {
-            margin-top: 10px;
-            font-size: 18px;
-            font-weight: bold;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; }
+        canvas { border: 2px solid black; background-color: lightgrey; margin-top: 20px; cursor: pointer; }
+        header { background-color: #333; color: white; padding: 15px; font-size: 24px; }
+        nav { background-color: #555; padding: 10px; text-align: center; }
+        nav ul { list-style: none; padding: 0; }
+        nav ul li { display: inline; margin: 0 15px; }
+        nav ul li a { color: white; text-decoration: none; font-size: 18px; }
+        nav ul li a:hover { text-decoration: underline; }
+        #detailsCellule { margin-top: 30px; display: inline-block; text-align: left; width: 80%; }
+        table { width: 100%; border-collapse: collapse; background-color: white; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #333; color: white; }
     </style>
 </head>
 <body>
 
-    <header>
-        <a class="return-link" href="/">⬅️ Retour</a>
-        <h1 class="module-title">Inventaire Entrepôt</h1>
-        <img class="logo-polybois" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Polybois">
-    </header>
+<header>📦 Inventaire détaillé - {{ entrepot }}</header>
 
-    <!-- Conteneur des icônes d'entrepôt -->
-    <div class="container">
-        {% set entrepots = ['entrepot_a', 'entrepot_b', 'entrepot_c', 'dome', 'corian', 'shipping', 'strat', 'exterieur', 'scie_a_panneau'] %}
-        {% for e in entrepots %}
-            <a href="{{ url_for('inventaire.inventaire_entrepot_detail', entrepot=e) }}" class="icon-card">
-                <p>{{ e|capitalize }}</p>
-            </a>
-        {% endfor %}
-    </div>
+<nav>
+    <ul>
+        <li><a href="/plan?mode=inventaire">⬅️ Retour au Plan</a></li>
+        <li><a href="/">🏠 Accueil</a></li>
+    </ul>
+</nav>
 
+<canvas id="entrepotCanvas" width="1600" height="800"></canvas>
+
+<!-- ✅ Ce div est ESSENTIEL -->
+<div id="detailsCellule"></div>
+
+<script>
+const elements = JSON.parse('{{ elements | tojson | safe }}');
+const murs = JSON.parse('{{ murs | tojson | safe }}');
+const canvas = document.getElementById("entrepotCanvas");
+const ctx = canvas.getContext("2d");
+
+// 🎨 Dessiner les cellules
+elements.forEach(el => {
+    const x = el["Position X"];
+    const y = 800 - el["Position Y"];
+    ctx.fillStyle = el["occupee"] ? "red" : "green";
+    ctx.fillRect(x - 20, y - 20, 40, 40);
+    ctx.fillStyle = "white";
+    ctx.fillText(el["Value"], x - 10, y + 5);
+});
+
+// 🧠 Ajout du gestionnaire de clic
+canvas.addEventListener("click", function(event) {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+
+    elements.forEach(el => {
+        const elX = el["Position X"];
+        const elY = 800 - el["Position Y"];
+
+        if (clickX >= (elX - 20) && clickX <= (elX + 20) && clickY >= (elY - 20) && clickY <= (elY + 20)) {
+            const cellule_id = el["id"];
+            const cellule_nom = el["Value"];
+            console.log("🖱️ Cellule cliquée:", cellule_nom, "→ ID:", cellule_id);
+
+            fetch(`/entrepot/api/cellule/${cellule_id}`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log("📦 Données reçues pour la cellule:", data);
+                    afficherDetailsCellule(cellule_nom, data);
+                })
+                .catch(err => console.error("❌ Erreur lors du fetch :", err));
+        }
+    });
+});
+
+// 📋 Fonction d'affichage des détails
+function afficherDetailsCellule(cellule, data) {
+    const container = document.getElementById("detailsCellule");
+
+    if (!container) {
+        console.error("❌ Le div #detailsCellule est introuvable !");
+        return;
+    }
+
+    let html = `<h3>Détails pour la cellule <strong>${cellule}</strong></h3>`;
+
+    if (data.length === 0) {
+        html += "<p>Aucun produit dans cette cellule.</p>";
+    } else {
+        html += `<table>
+            <thead><tr>
+                <th>Produit</th><th>Description</th><th>Quantité</th><th>Commande (PO)</th><th>Projet</th>
+            </tr></thead><tbody>`;
+        data.forEach(item => {
+            html += `<tr>
+                <td>${item.produit_code}</td>
+                <td>${item.description}</td>
+                <td>${item.quantite}</td>
+                <td>${item.commande_po}</td>
+                <td>${item.projet_nom}</td>
+            </tr>`;
+        });
+        html += "</tbody></table>";
+    }
+
+    container.innerHTML = html;
+}
+
+// 🧱 Dessin des murs
+ctx.strokeStyle = "black";
+ctx.lineWidth = 3;
+murs.forEach(mur => {
+    const x1 = mur["Start X"];
+    const y1 = 800 - mur["Start Y"];
+    const x2 = mur["End X"];
+    const y2 = 800 - mur["End Y"];
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+});
+</script>
 </body>
 </html>
