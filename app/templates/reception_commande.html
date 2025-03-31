@@ -103,19 +103,16 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             {% for detail in details %}
-                // @ts-ignore
                 const storedEmplacement = sessionStorage.getItem('emplacement_produit_{{ detail.produit_id }}');
-                if(storedEmplacement) {
+                if (storedEmplacement) {
                     const data = JSON.parse(storedEmplacement);
-                    // @ts-ignore
                     document.getElementById('emplacement-{{ detail.produit_id }}').innerText = data.entrepot + ' - ' + data.cellule;
-                    // @ts-ignore
                     document.getElementById('input-emplacement-{{ detail.produit_id }}').value = data.entrepot + ';' + data.cellule;
                     sessionStorage.removeItem('emplacement_produit_{{ detail.produit_id }}');
                 }
             {% endfor %}
         });
-        </script>
+    </script>
     
 
 </body>

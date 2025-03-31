@@ -34,95 +34,103 @@
 <div id="detailsCellule"></div>
 
 <script>
-const elements = JSON.parse('{{ elements | tojson | safe }}');
-const murs = JSON.parse('{{ murs | tojson | safe }}');
-const urlParams = new URLSearchParams(window.location.search);
-const produit_id = urlParams.get('produit_id');
-const achat_id = urlParams.get('achat_id');
-const nom_entrepot = "{{ entrepot }}";
+    document.addEventListener("DOMContentLoaded", function() {
+        const elements = JSON.parse('{{ elements | tojson | safe }}');
+        const murs = JSON.parse('{{ murs | tojson | safe }}');
+        const urlParams = new URLSearchParams(window.location.search);
+        const produit_id = urlParams.get('produit_id');
+        const achat_id = urlParams.get('achat_id');
+        const nom_entrepot = "{{ entrepot }}";
+    
+        const canvas = document.getElementById("entrepotCanvas");
+        const ctx = canvas.getContext("2d");
+    
+        ctx.font = "14px Arial";
+    
+        // Dessiner les cellules
+        elements.forEach(el => {
+            const x = el["Position X"];
+            const y = 800 - el["Position Y"];
+            ctx.fillStyle = el["occupee"] ? "red" : "green";
+            ctx.fillRect(x - 20, y - 20, 40, 40);
+            ctx.fillStyle = "white";
+            ctx.fillText(el["Value"], x - 10, y + 5);
+        });
+    
+        // Gestion du clic sur les cellules
+        canvas.addEventListener("click", function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+    
+            elements.forEach(el => {
+                const elX = el["Position X"];
+                const elY = 800 - el["Position Y"];
+    
+                if (clickX >= (elX - 20) && clickX <= (elX + 20) &&
+                    clickY >= (elY - 20) && clickY <= (elY + 20)) {
+                    
+                    const cellule = el["Value"];
+    
+                    if (!produit_id || !achat_id) {
+                        // Mode visualisation
+                        fetch(`/entrepot/api/cellule/${el["id"]}`)
+                            .then(res => res.json())
+                            .then(data => afficherDetailsCellule(cellule, data))
+                            .catch(err => console.error("Erreur:", err));
+                    } else {
+                        // Mode attribution
+                        console.log("ATTRIBUTION → Produit:", produit_id, "Achat:", achat_id, "Cellule:", cellule);
+                        sessionStorage.setItem('emplacement_produit_' + produit_id, JSON.stringify({
+                            entrepot: nom_entrepot,
+                            ellule: cellule
+                        }));
+                        window.location.href = `/reception/commande/${achat_id}`;
 
-const canvas = document.getElementById("entrepotCanvas");
-const ctx = canvas.getContext("2d");
-
-ctx.font = "14px Arial";
-
-// Dessiner les cellules (rouge = occupée, vert = libre)
-elements.forEach(el => {
-    const x = el["Position X"];
-    const y = 800 - el["Position Y"];
-    ctx.fillStyle = el["occupee"] ? "red" : "green";
-    ctx.fillRect(x - 20, y - 20, 40, 40);
-    ctx.fillStyle = "white";
-    ctx.fillText(el["Value"], x - 10, y + 5);
-});
-
-// Gestion clic cellule
-canvas.addEventListener("click", function(event) {
-    const rect = canvas.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
-
-    elements.forEach(el => {
-        const elX = el["Position X"];
-        const elY = 800 - el["Position Y"];
-
-        if (clickX >= (elX - 20) && clickX <= (elX + 20) && clickY >= (elY - 20) && clickY <= (elY + 20)) {
-            const cellule = el["Value"];
-            if (!produit_id || !achat_id) {
-                // Mode visualisation inventaire
-                fetch(`/entrepot/api/cellule/${el["id"]}`)
-                    .then(res => res.json())
-                    .then(data => afficherDetailsCellule(cellule, data))
-                    .catch(err => console.error("Erreur:", err));
+                    }
+                }
+            });
+        });
+    
+        // Dessiner les murs
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        murs.forEach(mur => {
+            const x1 = mur["Start X"];
+            const y1 = 800 - mur["Start Y"];
+            const x2 = mur["End X"];
+            const y2 = 800 - mur["End Y"];
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        });
+    
+        // Affichage inventaire
+        function afficherDetailsCellule(cellule, data) {
+            const container = document.getElementById("detailsCellule");
+            let html = `<h3>Détails pour la cellule ${cellule}</h3>`;
+    
+            if(data.length === 0) {
+                html += "<p>Aucun produit dans cette cellule.</p>";
             } else {
-                // Mode attribution lors de la réception
-                sessionStorage.setItem('emplacement_produit_' + produit_id, JSON.stringify({
-                    entrepot: nom_entrepot,
-                    cellule: cellule
-                }));
-                window.location.href = `/reception/commande/${achat_id}`;
+                html += `<table>
+                    <thead><tr><th>Produit</th><th>Description</th><th>Quantité</th><th>Commande (PO)</th><th>Projet</th></tr></thead>
+                    <tbody>`;
+                data.forEach(item => {
+                    html += `<tr>
+                        <td>${item.produit_code}</td>
+                        <td>${item.description}</td>
+                        <td>${item.quantite}</td>
+                        <td>${item.commande_po}</td>
+                        <td>${item.projet_nom}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
             }
+    
+            container.innerHTML = html;
         }
     });
-});
-
-// Affichage détaillé de la cellule
-function afficherDetailsCellule(cellule, data) {
-    const container = document.getElementById("detailsCellule");
-    let html = `<h3>Détails pour la cellule ${cellule}</h3>`;
-
-    if(data.length === 0) {
-        html += "<p>Aucun produit dans cette cellule.</p>";
-    } else {
-        html += `<table>
-            <thead><tr><th>Produit</th><th>Description</th><th>Quantité</th><th>Commande (PO)</th><th>Projet</th></tr></thead>
-            <tbody>`;
-        data.forEach(item => {
-            html += `<tr>
-                <td>${item.produit_code}</td>
-                <td>${item.description}</td>
-                <td>${item.quantite}</td>
-                <td>${item.commande_po}</td>
-                <td>${item.projet_nom}</td>
-            </tr>`;
-        });
-        html += `</tbody></table>`;
-    }
-
-    container.innerHTML = html;
-}
-
-// Dessiner les murs
-ctx.strokeStyle = "black";
-ctx.lineWidth = 3;
-murs.forEach(mur => {
-    const x1 = mur["Start X"];
-    const y1 = 800 - mur["Start Y"];
-    const x2 = mur["End X"];
-    const y2 = 800 - mur["End Y"];
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-});
-</script>
+ </script>
+    
 
 </body>
 </html>
