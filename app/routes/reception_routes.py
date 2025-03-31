@@ -13,14 +13,13 @@ reception_bp = Blueprint('reception', __name__)
 # ====================================================
 @reception_bp.route("/", methods=["GET"])
 def reception():
+    achats = Achat.query.order_by(Achat.po).all()
+    current_app.logger.info(f"Commandes d'achat récupérées pour recherche PO : {len(achats)}")
+    return render_template("reception.html", achats=achats)
+
+
     
-    """
-    Affiche la page principale du module Réception.
-    L'utilisateur peut y sélectionner un projet parmi ceux en cours.
-    """
-    projets_actifs = Projet.query.filter_by(statut="en cours").all()
-    current_app.logger.info(f"Projets actifs récupérés: {len(projets_actifs)}")
-    return render_template("reception.html", projets=projets_actifs)
+
 
 # ====================================================
 # API pour récupérer les commandes d'achat associées à un projet
