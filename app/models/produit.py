@@ -36,7 +36,7 @@ class Produit(db.Model):
         return f"<Produit {self.code or 'sans code'}>"
 
 
-    def crer_produit(self):
+    def creer_produit(self):
         """
         Creer le produit dans la base de données, si le code est unique.
         Lève une ValueError si le code existe déjà.
@@ -52,42 +52,40 @@ class Produit(db.Model):
         except Exception as e:
             db.session.rollback()
             raise Exception(f"Erreur lors de l'enregistrement du produit : {e}")
-
-
-
-
-
-
-    def modifier_produit(self, **kwargs):
-        """Modifie les attributs du produit et sauvegarde les changements."""
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-        db.session.commit()
-        print(f"✅ Produit {self.code} mis à jour avec succès.")
-
-
-
+        
+    
     @classmethod
-    def recuperer_produit(cls, code):
-        """Retourne le produit correspondant au code donné, ou None si non trouvé."""
-        return cls.query.filter_by(code=code).first()
+    def creer_depuis_formulaire(cls, form):
+        code = form.get("code") or None
+        data = {}
+        for key in ["description", "materiaux", "categorie", "quantite"]:
+            value = form.get(key)
+            if value:
+                if key == "quantite":
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        raise ValueError("La quantité doit être un nombre entier.")
+                data[key] = value
 
-    def supprimer_produit(self):
-        """Supprime ce produit de la base de données."""
-        db.session.delete(self)
-        db.session.commit()
-        print(f"🗑️ Produit {self.code} supprimé avec succès.")
+        # Création du produit
+        produit = cls(code=code, **data)
+        produit.creer_produit()
+        return produit
 
-    def associer_a_projet(self, projet, quantite):
-        """
-        Associe ce produit à un projet avec une quantité spécifique.
-        Si le projet est invalide, la méthode affiche un message d'avertissement.
-        """
-        if not projet:
-            print("⚠️ Projet invalide.")
-            return
-        lien = ProduitProjet(produit_id=self.id, projet_id=projet.id, quantite=quantite)
-        db.session.add(lien)
-        db.session.commit()
-        print(f"✅ Produit {self.code} ajouté au projet {projet.code} avec quantité {quantite}.")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   

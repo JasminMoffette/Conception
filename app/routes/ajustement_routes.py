@@ -20,26 +20,9 @@ def ajustement():
 # ====================================================
 @ajustement_bp.route("/creer_produit", methods=["POST"])
 def creer_produit():
-    code = request.form.get("code")
-    if not code:  
-        code = None
-
-    valid_attributs = {}
-    for key in ["description", "materiaux", "categorie", "quantite"]:
-        value = request.form.get(key)
-        if value:
-            if key == "quantite":
-                try:
-                    value = int(value)
-                except ValueError:
-                    flash("❌ La quantité doit être un nombre entier.", "error")
-                    return redirect(url_for("ajustement.ajustement"))
-            valid_attributs[key] = value
-
     try:
-        nouveau_produit = Produit(code=code, **valid_attributs)
-        nouveau_produit.crer_produit()
-        flash(f"✅ Produit {code} ajouté avec succès à l'inventaire !", "success")
+        produit = Produit.creer_depuis_formulaire(request.form)
+        flash(f"✅ Produit {produit.code or 'sans code'} ajouté avec succès", "success")
     except ValueError as e:
         flash(f"⚠️ {str(e)}", "warning")
     except Exception as e:
