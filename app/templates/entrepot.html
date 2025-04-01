@@ -41,12 +41,12 @@
         const produit_id = urlParams.get('produit_id');
         const achat_id = urlParams.get('achat_id');
         const nom_entrepot = "{{ entrepot }}";
-    
+
         const canvas = document.getElementById("entrepotCanvas");
         const ctx = canvas.getContext("2d");
-    
+
         ctx.font = "14px Arial";
-    
+
         // Dessiner les cellules
         elements.forEach(el => {
             const x = el["Position X"];
@@ -56,22 +56,22 @@
             ctx.fillStyle = "white";
             ctx.fillText(el["Value"], x - 10, y + 5);
         });
-    
+
         // Gestion du clic sur les cellules
         canvas.addEventListener("click", function(event) {
             const rect = canvas.getBoundingClientRect();
             const clickX = event.clientX - rect.left;
             const clickY = event.clientY - rect.top;
-    
+
             elements.forEach(el => {
                 const elX = el["Position X"];
                 const elY = 800 - el["Position Y"];
-    
+
                 if (clickX >= (elX - 20) && clickX <= (elX + 20) &&
                     clickY >= (elY - 20) && clickY <= (elY + 20)) {
                     
                     const cellule = el["Value"];
-    
+
                     if (!produit_id || !achat_id) {
                         // Mode visualisation
                         fetch(`/entrepot/api/cellule/${el["id"]}`)
@@ -80,18 +80,19 @@
                             .catch(err => console.error("Erreur:", err));
                     } else {
                         // Mode attribution
-                        console.log("ATTRIBUTION → Produit:", produit_id, "Achat:", achat_id, "Cellule:", cellule);
-                        sessionStorage.setItem('emplacement_produit_' + produit_id, JSON.stringify({
+                        const data = {
                             entrepot: nom_entrepot,
-                            ellule: cellule
-                        }));
+                            cellule: cellule
+                        };
+                        const key = `emplacement_produit_${produit_id}`;
+                        sessionStorage.setItem(key, JSON.stringify(data));
+                        console.log("✅ Emplacement enregistré :", key, data);
                         window.location.href = `/reception/commande/${achat_id}`;
-
                     }
                 }
             });
         });
-    
+
         // Dessiner les murs
         ctx.strokeStyle = "black";
         ctx.lineWidth = 3;
@@ -100,14 +101,17 @@
             const y1 = 800 - mur["Start Y"];
             const x2 = mur["End X"];
             const y2 = 800 - mur["End Y"];
-            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
         });
-    
+
         // Affichage inventaire
         function afficherDetailsCellule(cellule, data) {
             const container = document.getElementById("detailsCellule");
             let html = `<h3>Détails pour la cellule ${cellule}</h3>`;
-    
+
             if(data.length === 0) {
                 html += "<p>Aucun produit dans cette cellule.</p>";
             } else {
@@ -125,12 +129,11 @@
                 });
                 html += `</tbody></table>`;
             }
-    
+
             container.innerHTML = html;
         }
     });
- </script>
-    
+</script>
 
 </body>
 </html>
