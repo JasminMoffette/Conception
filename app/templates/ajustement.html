@@ -108,7 +108,7 @@
         <div id="formCreation" class="hidden">
             <h3>🛠️ Création de Produit</h3>
             <form method="POST" action="{{ url_for('ajustement.creer_produit') }}">
-                <input type="text" name="code" placeholder="Code Produit (Obligatoire)" required><br>
+                <input type="text" name="code" placeholder="Code Produit (optionnel)">
 
                 <label><input type="checkbox" name="attributs" value="description" onchange="toggleField('description')"> Description</label><br>
                 <label><input type="checkbox" name="attributs" value="materiaux" onchange="toggleField('materiaux')"> Matériaux</label><br>

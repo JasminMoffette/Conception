@@ -20,18 +20,14 @@ def ajustement():
 # ====================================================
 @ajustement_bp.route("/creer_produit", methods=["POST"])
 def creer_produit():
-    # Récupérer le code produit, champ obligatoire
     code = request.form.get("code")
-    if not code:
-        flash("❌ Le code produit est obligatoire.", "error")
-        return redirect(url_for("ajustement.ajustement"))
+    if not code:  
+        code = None
 
-    # Récupérer les autres attributs facultatifs depuis le formulaire
     valid_attributs = {}
     for key in ["description", "materiaux", "categorie", "quantite"]:
         value = request.form.get(key)
         if value:
-            # Pour 'quantite', on essaie de convertir en entier
             if key == "quantite":
                 try:
                     value = int(value)
@@ -40,16 +36,14 @@ def creer_produit():
                     return redirect(url_for("ajustement.ajustement"))
             valid_attributs[key] = value
 
-    # Vérifier si le produit existe déjà dans la base de données
-    produit_existant = Produit.query.filter_by(code=code).first()
-    if produit_existant:
-        flash(f"⚠️ Le produit {code} existe déjà.", "warning")
-        return redirect(url_for("ajustement.ajustement"))
+    try:
+        nouveau_produit = Produit(code=code, **valid_attributs)
+        nouveau_produit.crer_produit()
+        flash(f"✅ Produit {code} ajouté avec succès à l'inventaire !", "success")
+    except ValueError as e:
+        flash(f"⚠️ {str(e)}", "warning")
+    except Exception as e:
+        flash(f"❌ Erreur inattendue : {str(e)}", "error")
 
-    # Créer et enregistrer le nouveau produit
-    nouveau_produit = Produit(code=code, **valid_attributs)
-    db.session.add(nouveau_produit)
-    db.session.commit()
-
-    flash(f"✅ Produit {code} ajouté avec succès à l'inventaire !", "success")
     return redirect(url_for("ajustement.ajustement"))
+

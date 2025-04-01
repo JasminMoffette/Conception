@@ -6,12 +6,12 @@ class Produit(db.Model):
     __tablename__ = 'produit'
     
     id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(50), unique=True, nullable=False)
+    code = db.Column(db.String(50), unique=True, nullable=True)
     description = db.Column(db.String(255))
     materiaux = db.Column(db.String(100))
     categorie = db.Column(db.String(100))
     quantite = db.Column(db.Integer, default=0)
-    historique = db.Column(db.Text, default='[]')  # Historique des modifications, stocké en JSON
+
 
     # Association avec Projet (via la table intermédiaire ProduitProjet)
     projets_associes = db.relationship("ProduitProjet", back_populates="produit", cascade="all, delete-orphan")
@@ -19,28 +19,44 @@ class Produit(db.Model):
     # Association avec Achat via LigneAchat
     lignes_achat = db.relationship("LigneAchat", back_populates="produit", cascade="all, delete-orphan")
     
-    # Association avec CommandeProduction via LigneCommandeProduction
-    lignes_commande = db.relationship("LigneCommandeProduction", back_populates="produit", cascade="all, delete-orphan")
-    
     # Suivi des stocks
     stocks = db.relationship("Stock", back_populates="produit", cascade="all, delete-orphan")
 
-    def __init__(self, code, **kwargs):
+    # Association avec CommandeProduction via LigneCommandeProduction (pas encore implenté)
+    lignes_commande = db.relationship("LigneCommandeProduction", back_populates="produit", cascade="all, delete-orphan")
+
+
+    def __init__(self, code=None, **kwargs):
         self.code = code
-        # Affecte dynamiquement les autres attributs passés en kwargs
         for key, value in kwargs.items():
             setattr(self, key, value)
-        # Initialisation de l'historique sous forme de JSON
-        self.historique = json.dumps(kwargs.get('historique', []))
+
 
     def __repr__(self):
-        return f"<Produit {self.code}>"
+        return f"<Produit {self.code or 'sans code'}>"
 
-    def ajouter_produit(self):
-        """Ajoute ce produit à la base de données."""
+
+    def crer_produit(self):
+        """
+        Creer le produit dans la base de données, si le code est unique.
+        Lève une ValueError si le code existe déjà.
+        """
+        if self.code:
+            existant = Produit.query.filter_by(code=self.code).first()
+            if existant:
+                raise ValueError(f"Produit {self.code} déjà existant.")
+
         db.session.add(self)
-        db.session.commit()
-        print(f"✅ Produit {self.code} ajouté avec succès.")
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise Exception(f"Erreur lors de l'enregistrement du produit : {e}")
+
+
+
+
+
 
     def modifier_produit(self, **kwargs):
         """Modifie les attributs du produit et sauvegarde les changements."""
@@ -48,6 +64,8 @@ class Produit(db.Model):
             setattr(self, key, value)
         db.session.commit()
         print(f"✅ Produit {self.code} mis à jour avec succès.")
+
+
 
     @classmethod
     def recuperer_produit(cls, code):
