@@ -1,6 +1,4 @@
 from app import db
-import json
-from .associations import ProduitProjet
 
 class Produit(db.Model):
     __tablename__ = 'produit'
