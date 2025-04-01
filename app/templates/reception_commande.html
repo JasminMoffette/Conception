@@ -62,6 +62,16 @@
 
     <h2>Détails de la commande d'achat : {{ achat.po }}</h2>
 
+    {% if nom_pdf %}
+        <p style="text-align: center;">
+            <a href="{{ url_for('reception.telecharger_pdf', filename=nom_pdf) }}" target="_blank">
+                📄 Afficher le bon de commande ({{ nom_pdf }})
+            </a>
+        </p>
+    {% else %}
+        <p style="text-align: center;"><em>PDF du bon de commande non trouvé pour ce PO.</em></p>
+    {% endif %}
+
     <form id="confirmationForm" method="POST" action="{{ url_for('reception.confirmer_reception') }}">
         <input type="hidden" name="achat_id" value="{{ achat.id }}">
         
@@ -99,7 +109,6 @@
         <button type="submit">Confirmer la réception</button>
     </form>
 
-    <!-- @ts-ignore -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             {% for detail in details %}
@@ -113,7 +122,6 @@
             {% endfor %}
         });
     </script>
-    
 
 </body>
 </html>
