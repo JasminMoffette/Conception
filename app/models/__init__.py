@@ -11,6 +11,7 @@ from .emplacement import Emplacement
 from .produit import Produit
 from .projet import Projet
 from .reception import Reception
+from .utilisateur import Utilisateur
 
 
 

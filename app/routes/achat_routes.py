@@ -3,9 +3,8 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 from app import db
-from app.models.achat import Achat
-from app.models.associations import LigneAchat  
-from app.models.projet import Projet
+# grace au init
+from app.models import Achat, LigneAchat, Projet
 
 achat_bp = Blueprint('achat', __name__)
 

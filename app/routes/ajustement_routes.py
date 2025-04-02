@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from app.models.produit import Produit
+from app.models import Produit
 from app import db
 
 ajustement_bp = Blueprint("ajustement", __name__)

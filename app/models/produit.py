@@ -52,6 +52,9 @@ class Produit(db.Model):
             raise Exception(f"Erreur lors de l'enregistrement du produit : {e}")
         
     
+
+
+    
     @classmethod
     def creer_depuis_formulaire(cls, form):
         code = form.get("code") or None

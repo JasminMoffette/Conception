@@ -1,11 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session
-from app.models.projet import Projet
-from app.models.achat import Achat
-from app.models.reception import Reception
-from app.models.associations import LigneReception
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, current_app, session
+from app.models import Achat, Reception, LigneReception
 from app import db
 import os
-from flask import send_from_directory
 
 # 📁 Corriger ici le chemin du dossier PDF sur ton système
 DOSSIER_PDF = "/Users/mathieumccutcheon/Desktop/Commandes_PO"

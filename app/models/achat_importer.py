@@ -1,8 +1,8 @@
 import os
 import pandas as pd
-from app.models.produit import Produit
-from app.models.achat import Achat
 from app import db
+from .produit import Produit
+from .achat import Achat
 
 class AchatImporter:
     def __init__(self, dossier_achats="achats/"):

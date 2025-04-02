@@ -1,8 +1,5 @@
-from flask import Blueprint, render_template, request, jsonify, current_app
-from app.models.produit import Produit
-from app.models.projet import Projet  
-from app.models.emplacement import Emplacement
-from app.models.associations import ProduitProjet, Stock
+from flask import Blueprint, render_template, request, redirect, jsonify, current_app
+from app.models import Produit, Projet, Emplacement, ProduitProjet, Stock
 from app import db
 
 inventaire_bp = Blueprint('inventaire', __name__)

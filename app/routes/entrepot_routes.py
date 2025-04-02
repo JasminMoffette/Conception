@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, jsonify, current_app
-from app.models.emplacement import Emplacement
-from app.models.associations import Stock
+from app.models import Emplacement, Stock
 
 entrepot_bp = Blueprint('entrepot', __name__)
 
