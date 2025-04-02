@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import Toplevel
 import pandas as pd
 import os
-from config import Config  # Import de la configuration
+from config import Config  
 
 # Construire le chemin complet vers le fichier Excel en utilisant Config.DATA_FOLDER
 data_file_path = os.path.join(Config.DATA_FOLDER, 'DATA_Plan_entrepot.xlsx')

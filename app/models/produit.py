@@ -11,16 +11,10 @@ class Produit(db.Model):
     quantite = db.Column(db.Integer, default=0)
 
 
-    # Association avec Projet (via la table intermédiaire ProduitProjet)
+    # Association 
     projets_associes = db.relationship("ProduitProjet", back_populates="produit", cascade="all, delete-orphan")
-    
-    # Association avec Achat via LigneAchat
     lignes_achat = db.relationship("LigneAchat", back_populates="produit", cascade="all, delete-orphan")
-    
-    # Suivi des stocks
     stocks = db.relationship("Stock", back_populates="produit", cascade="all, delete-orphan")
-
-    # Association avec CommandeProduction via LigneCommandeProduction (pas encore implenté)
     lignes_commande = db.relationship("LigneCommandeProduction", back_populates="produit", cascade="all, delete-orphan")
 
 
@@ -29,10 +23,8 @@ class Produit(db.Model):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-
     def __repr__(self):
         return f"<Produit {self.code or 'sans code'}>"
-
 
     def creer_produit(self):
         """
@@ -53,8 +45,6 @@ class Produit(db.Model):
         
     
 
-
-    
     @classmethod
     def creer_depuis_formulaire(cls, form):
         code = form.get("code") or None
